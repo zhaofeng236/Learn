@@ -302,3 +302,110 @@ Markdown使用了很多特殊符号来表示特定的意义，如果需要显示
 
 **文本加粗**
 \*\*文本加粗\*\*
+
+Markdown支持以下这些符号前面加上反斜杠来帮助插入普通的符号:
+
+|符号|说明|
+|:----:|:----:|
+|\\|反斜线|
+|\-|反引号|
+|\*|星号|
+|\_|下划线|
+|\{ }|花括号|
+|\[ ]|方括号|
+|\( )|小括号|
+|\#|井字符|
+|\+|加号|
+|\-|减号|
+|\.|英文句点|
+|\!|感叹号|
+
+<br>
+<hr>
+
+# 数学基本语法
+
+## 公式
+当你需要在编辑器中插入数学公式时，可以使用两个美元符号\$$ 包裹TeX或LaTeX格式的数学公式实现。提交后，问答和文章会根据需要加载Mathjax对数学公式进行渲染。如:
+
+$$
+ \mathbf{v}_1 \times \mathbf{v}_2 = \begin{vmarix}
+ \mathbf{i} & \mathbf{j} & \mathbf{k} \\
+ \frac{\partial X}{\partial u} & \frac{\partial Y}{\partial u} & 0 \\
+ \frac{\partial X}{\partial v} & \frac{\partial Y}{\partial v} & 0 \\
+ \end{vmatrix}
+ ${$tep1}{\style{visibility:hidden}{(x+1)(x+1)}}
+$$
+
+$$
+\sum_{i=0}^N\int_{a}^{b}g(t,i)\text{d}t
+$$
+
+
+
+## 呈现位置
+  -  正文inline中的LaTeX公式用\$...\$定义
+  -  语句为$\sum_{i=0}^N\int_{a}^{b}g(t,i)\text{d}t$
+  -  单独显示的LaTex公式用\$\$...$$显示。
+
+
+## 希腊字母
+|显示|命令|显示|命令|
+|:-:|:-:|:-:|:-:|
+|$\alpha$|\alpha|$\beta$|\beta|
+|$\gamma$|\gamma|$\delta$|\delta|
+|$\epsilon$|\epsilon|$\zeta$|\zeta|
+|$\eta$|\eta|$\theta$|\theta|
+|$\iota$|\iota|$\kappa$|\kappa|
+|$\lambda$|\lambda|$\mu$|\mu|
+|$\nu$|\nu|$\xi$|\xi|
+|$\pi$|\pi|$\rho$|\rho|
+|$\sigma$|\sigma|$\tau$|\tau|
+|$\upsilon$|\upsilon|$\phi$|\phi|
+|$\chi$|\chi|$\psi$|\psi|
+|$\omega$|\omega|$$||
+
+  -  若需要大写希腊字母，将命令首字母大写即可。
+
+
+## 字母修饰
+### 上下标
+  -  上标: ^
+  -  下标: _
+例如: C_n^2 呈现为 $C_n^2$
+
+### 矢量
+\vec a 呈现为 $\vec a$
+\overrightarrow{xy} 呈现为 $\overrightarrow{xy}$
+
+### 字体
+  *  Typewriter: \mathtt{A} 呈现为 $\mathtt{A}$
+  *  Blackboard Bold: \mathbb{A} 呈现为 $\mathbb{A}$
+  *  Sans Serif: \mathsf{A} 呈现为 $\mathsf{A}$
+
+### 分组
+  -  使用{}将具有相同等级的内容扩入其中，成组处理
+  -  例如: 10^{10} 呈现为 $10^{10}$，而10^10呈现为 $10^10$
+
+### 括号
+  -  小括号:（） 呈现为$()$
+  -  中括号:[] 呈现为$[]$
+  -  尖括号:\langle,\rangle 呈现为$\langle$   $\rangle$
+  -  使用\left(或\right)使得符号大小写于临近的公式相适应；该语句使用于所有括号类型
+     -  (\frac{x}{y}) 呈现为 $(\frac{x}{y})$
+     -  而\left(\frac{x}{y}\right) 呈现为 $\left(\frac{x}{y}\right)$
+
+### 求和、极限与积分
+- 求和: \sum
+  - 例如: \sum_{i=1}^n{a_i} 呈现为 $\sum_{i=1}^n{a_i}$
+
+- 极限: \lim_{x\to 0} 呈现为: $\lim_{x\to 0}$
+- 积分: \int
+  - 例如: \int_0^\infty{fxdx} 呈现为 $\int_0^\infty{fxdx}$
+
+### 分式与根式
+- 分式(fractions): \frac{公式1}{公式2} 呈现为 $\frac{x-y}{x+y}$
+- 根式: \sqrt[x]{y} 呈现为 $\sqrt[x]{y}$ 
+
+2020年6月29日 https://www.jianshu.com/p/a0aa94ef8ab2/
+### 特殊函数
