@@ -419,6 +419,16 @@ Markdown支持html语法，所以我们可以使用excel或html代码生成我�
 </table>
 
 
+### 表格单元格合并.
+
+|aa|bb|cc|
+|--|--|--|
+|1| |2|
+|3|>|4|
+|5|6||
+|^|7|8|
+
+
 <br>
 <br>
 ## Markdown 高级技巧
@@ -713,8 +723,44 @@ Markdown Preview Enhanced是一款为Atom以及vs code编辑器编写的超级�
 - Front Matter
 - 以及其他
 
+<hr>
+<br>
+## 为什么使用Markdown写文档
+Markdown是一种语言，这种语言的设计思路是：
+1.他是一种语言而不是二进制文件格式，可以纯文本读和写
+2.写的时候尽可能可读性高（这里隆重对比另一种村文本写出格式语言LaTeX，虽然二者目的原理都完全不相同）。
+3.在显示的时候被翻译成HTML显示，可以很清楚很好看。
+
+Markdown是一种纯文本格式，因此特别使用用于git进行版本控制
+
+想象一个项目有一个图文并茂的描述文件，doc格式，大小5MB。现在我们面临一个抉择——把他放到Git上还是网盘上。
+
+1. 如果放到git上，那么对这个文档的一丁点改变都会引起一个5MB大小的二进制文件的改动，非常浪费。
+2. 如果放到网盘上，那么这个文档就会丢失大量的版本信息。中国要的改动经常需要手动备份保留。非常麻烦。
+
+但是用Markdown之后，文档就和代码一样是一行行的纯文本；图片之类的资源是外链的，不改动图片本身就不会产生提交。这就大大提高了版本控制的效率。文档可以像代码一样享受版本控制的优点了。
+3. Markdown是HTML的一种简写，在显示时会`[压缩]`成HTML。可以在Markdown里面直接使用HTML块，他们最终成为HTML的一部分。
+4. Markdown的格式可以由CSS描述。预览工具或者用户可以自己决定用什么CSS显示。
 
 
+<br>
+
+### 基本的Markdown语法非常简单。
+- 以#开头的行表示这是一个标题，有一级标题、二级标题...
+- 以`* - +`开头的行，表表示无序的列表；以数字开头的行，表示有序列表。
+- 以大于号> 开头的行被认为时一段引用的文字（可以在一些论坛，或者邮寄客户端见过用法）
+> 这个就是示例，以>开头的行。表示引用。
+- 没有特殊符号开头的文字就是正文段落。正文段落之间必须有空行。没有空行的换行会被认为是一行。
+- 在任何时候都可以用一对`*斜体*`将内部文本标为斜体。用一对`**粗体**`将内部文本标记为粗体。
+- 前面四个空格的段落被认为是代码段，或者可以认为这个段落内容不会被解释成任何格式。
+- 连续敲除你能想到的合适的符号来生成分割线，比如`*** --- ___`。
+
+<br>
+
+### MPE对Markdown语法的增强
+首先是目录，对于长文档来说，目录很必要。
+在MPE里最简单的插入目录的方法就是在单独的行里使用[TOC]标记。这会在当前位置立即插入一个目录。
+<hr><br>
 ## Markdown基本要素
 如果给标题欠佳id或者class，请在标题最后添加{#id .class1 .class2}
 
@@ -825,6 +871,20 @@ Markdown Preview Enhanced 内部支持 `flow charts , sequence diagrams , mermai
 示例：
 
 ```flow
+st=>start: 入口:>http://www.google.com[blank]
+e=>end: 出口 :> http://www.google.com
+op1=>operation: My Operation
+sub1=>subroutine: My Subroutine
+cond=>condition: Yes or No? :> http://www.google.com
+io=>inputoutput: catch something
+
+st->op1->cond
+cond(yes)->io->e
+cond(no)->sub1(right)->op1
+```
+
+>代码如下：
+\```flow
 st=>start: Start:>http://www.google.com[blank]
 e=>end:> http://www.google.com
 op1=>operation: My Operation
@@ -833,22 +893,24 @@ cond=>condition: Yes
 or No?:> http://www.google.com
 io=>inputoutput: catch something
 
-st->op1-cond
+st->op1->cond
 cond(yes)->io->e
 cond(no)->sub1(right)->op1
-```
+\```
 
+<hr>
 
 ### Sequence Diagrams
 - sequence 代码块中的内容将会被js-sequence-diagrams渲染。
 - 支持两个主题 `simple （默认）` 和 `hand`
 
-\`\`\`sequence {theme="simple"}
+>代码如下：
+\```sequence {theme="simple"}
 Andrew->China: Says Hello
 Note right of China: China thinks\nabout it
 China-->Andrew: How are you?
 Andrew->>China: I am good thanks!
-\`\`\` 
+\``` 
 
 ```sequence {theme="simple"}
 Andrew->China: Says Hello
@@ -859,7 +921,7 @@ Andrew->>China: I am good thanks!
 
 ---
 
-
+>代码如下：
 \```sequence {theme="hand"}
 Andrew->China: Says Hello
 Note right of China: China thinks\nabout it
@@ -875,3 +937,230 @@ Andrew->>China: I am good thanks!
 ```
 
 [2020年6月30日17:05分](https://shd101wyy.github.io/markdown-preview-enhanced/#/zh-cn/diagrams?id=flow-charts)
+
+
+### Mermaid
+Markdown Preview Enhanced使用mermaid来渲染流程图和时序图
+- `mermaid `代码块中的内容将会渲染mermaid图像。
+- 查看mermaid文档 了解更多如何创建图形。
+
+> 代码如下：
+\```mermaid
+graph LR
+A -->B;
+B -->C;
+C -->A;
+\```
+
+```mermaid
+graph LR
+A -->B;
+B -->C;
+C -->A;
+```
+
+
+
+三个mermaid主题是支持的，并且你可以在插件设置中设置主题。
+- mermaid.css
+- mermaid.dark.css
+- mermaid.forest.css
+- 还可以通过markdown Preview Enhanced：Open Mermaid Config命令打开mermaid配置文件。
+
+
+<br>
+
+### PlantUML
+使用PlantUML来创建各种图形。（java是需要被先安装好的）
+- 你可以安装Graphviz（非必须）来辅助生成各种图形；
+- `puml`或者`plantuml`代码块中的内容将被PlantUML渲染
+
+>代码如下：
+\```puml
+A -> B
+\```
+
+>代码如下：
+\```puml
+@startuml
+a -> b
+b -> c
+@enduml
+\```
+
+
+### WaveDrom
+使用WaveDrom来渲染digital timing diagram。
+
+> 代码如下：
+\```wavedrom
+{signal:
+ [
+    {name: 'clk',wave: 'p..Pp..p'},
+    ['Master',
+        ['ctrl',
+          {name: 'write',wave:'01.0....'},
+          {name: 'read',wave:'0...1..0'}
+        ],
+        {name: 'addr',wave:'x2.x4..x',data:'A1 A2'},
+        {name: 'wdata',wave:'x3.x....',data: 'D1'},
+    ],
+    {},
+    ['Slave',
+      ['ctrl',
+        {name:'ack',wave:'x01x0.1x'},
+      ],
+      {name:'rdata',wave:'x......4x',data:'Q2'},
+    ]
+ ]
+}
+\```
+
+```wavedrom
+{signal:
+ [
+    {name: 'clk',wave: 'p..Pp..p'},
+    ['Master',
+        ['ctrl',
+          {name: 'write',wave:'01.0....'},
+          {name: 'read',wave:'0...1..0'}
+        ],
+        {name: 'addr',wave:'x2.x4..x',data:'A1 A2'},
+        {name: 'wdata',wave:'x3.x....',data: 'D1'},
+    ],
+
+    {},
+    ['Slave',
+      ['ctrl',
+        {name:'ack',wave:'x01x0.1x'},
+      ],
+      {name:'rdata',wave:'x......4x',data:'Q2'},
+    ]
+ ]
+}
+```
+
+<br>
+```wavedrom
+{signal: 
+  [
+    {name:'测试1',wave:'123456789'},
+    {name:'测试2',wave:'p..Pp..p'}
+  ]
+}
+```
+
+<br>
+
+### 使用Viz.js来渲染dot语言图形
+- ` viz `或者` dot `代码块中的内容将被Viz.js渲染
+- 你可以通过`{engine="..."} `来选择不同的渲染引擎。引擎` circo，dot，neato，osage，或者twopi`是被支持的。默认下，使用dot引擎。
+
+
+>**代码如下：**
+\```dot
+digraph G{
+  A->B
+  B->C
+  B->D
+}
+\```
+
+```dot
+digraph G{
+  A->B
+  B->C
+  B->D
+}
+```
+---
+
+>代码如下：
+\```dot {engine="circo"}
+digraph G{
+  A->B
+  B->C
+  B->D
+}
+\```
+
+```dot {engine="circo"}
+digraph G{
+  A->B
+  B->C
+  B->D
+}
+```
+---
+<br>
+
+### Vega和Vega-lite
+Markdown Preview Enhanced 支持vega以及vega-lite的静态图像
+- `vega` 代码块中的内容将被vega渲染；
+- `vbega-lite` 代码块中的内容将被vega-lite渲染；
+- `JSON` 以及 `YAML` 输入是支持的；
+
+>代码如下：
+\```vega-lite
+{
+  "$schema":
+  "https://vega.github.io/schema/vega-lite/v2.json",
+  "description":"A simple bar chart with embedded data.",
+  "data":
+  {
+    "values":
+    [
+      {"a":"A","b":20},
+      {"a":"B","b":26},
+      {"a":"C","b":40},
+      {"a":"D","b":44},
+      {"a":"E","b":31},
+      {"a":"F","b":63},
+      {"a":"G","b":120},
+      {"a":"H","b":140},
+      {"a":"I","b":45}
+    ]
+  },
+  "mark":"bar",
+  "encoding":
+  {
+    "x":{"field":"a","type":"ordinal"},
+    "y":{"field":"b","type":"quantitative"}
+  },
+  "width":500,
+  "height":400
+}
+\```
+
+```vega-lite
+{
+  "$schema":
+  "https://vega.github.io/schema/vega-lite/v2.json",
+  "description":"A simple bar chart with embedded data.",
+  "data":
+  {
+    "values":
+    [
+      {"a":"A","b":20},
+      {"a":"B","b":26},
+      {"a":"C","b":40},
+      {"a":"D","b":44},
+      {"a":"E","b":31},
+      {"a":"F","b":63},
+      {"a":"G","b":120},
+      {"a":"H","b":140},
+      {"a":"I","b":45}
+    ]
+  },
+  "mark":"bar",
+  "encoding":
+  {
+    "x":{"field":"a","type":"ordinal"},
+    "y":{"field":"b","type":"quantitative"}
+  },
+  "width":500,
+  "height":400
+}
+```
+
+[2020年6月30日学习](https://shd101wyy.github.io/markdown-preview-enhanced/#/zh-cn/diagrams)
