@@ -288,7 +288,139 @@ Markdown制作表格使用"|"来分隔不同的单元格，使用"-"来分隔表
 |大理经开投集团公司|1004010110|5,545,510.19|
 
 
+|name|age|gender|money|
+|:--------:|:--:|:-------------:|--------:|
+|rhio|26|roboteae|￥23651.00|
+|haroo|.3|fe5a6|￥485.00|
+|jilief|？？|f5e9w5|$129601548.16|
 
+Markdown支持html语法，所以我们可以使用excel或html代码生成我们需要的表格，放入markdown中。
+
+<table border=0 cellpadding=0 cellspacing=0 width=750 style='border-collapse:
+ collapse;table-layout:fixed;width:563pt'>
+ <col width=254 style='mso-width-source:userset;mso-width-alt:8128;width:191pt'>
+ <col width=124 span=4 style='mso-width-source:userset;mso-width-alt:3968;
+ width:93pt'>
+ <tr height=31 style='height:23.25pt'>
+  <td colspan=5 height=31 class=xl122 width=750 style='height:23.25pt;
+  width:563pt'>现金流量表</td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl72 style='height:14.25pt'>项目名称</td>
+  <td class=xl72 style='border-left:none'>2016年</td>
+  <td class=xl72 style='border-left:none'>2017年</td>
+  <td class=xl72 style='border-left:none'>2018年</td>
+  <td class=xl72 style='border-left:none'>2019年6月30</td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl123 style='height:14.25pt;border-top:none'>经营活动现金流入小计</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>2,091,395,992.77</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>3,450,149,786.07</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>2,872,361,932.98</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>1,027,768,693.77</td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl72 style='height:14.25pt;border-top:none'>经营活动现金流出小计</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>1,517,016,777.25</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>3,294,224,428.59</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>2,493,690,247.87</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>844,845,906.01</td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl123 style='height:14.25pt;border-top:none'>一、经营活动产生的现金流量净额</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>574,379,215.52</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>155,925,357.48</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>378,671,685.11</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>182,922,787.76</td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl72 style='height:14.25pt;border-top:none'>投资活动现金流入小计</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>9,145,590.48</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>8,529,838.96</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>1,392,983.32</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>11,121.76</td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl123 style='height:14.25pt;border-top:none'>投资活动现金流出小计</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>810,013,065.61</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>445,408,134.84</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>171,261,310.53</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>34,965,758.30</td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl72 style='height:14.25pt;border-top:none'>二、投资活动产生的现金流量净额</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'><font
+  color="#FF0000" style='mso-ignore:color'>-800,867,475.13</font></td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'><font
+  color="#FF0000" style='mso-ignore:color'>-436,878,295.88</font></td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'><font
+  color="#FF0000" style='mso-ignore:color'>-169,868,327.21</font></td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'><font
+  color="#FF0000" style='mso-ignore:color'>-34,954,636.54</font></td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl123 style='height:14.25pt;border-top:none'>筹资活动现金流入小计</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>3,641,809,800.00</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>2,756,445,927.44</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>1,873,226,609.53</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>440,195,083.21</td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl72 style='height:14.25pt;border-top:none'>筹资活动现金流出小计</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>3,416,145,844.62</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>2,510,342,537.45</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>2,101,889,874.77</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'>721,670,777.66</td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl123 style='height:14.25pt;border-top:none'>三、筹资活动产生的现金流量净额</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>225,663,955.38</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>246,103,389.99</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'><font
+  color="#FF0000" style='mso-ignore:color'>-228,663,265.24</font></td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'><font
+  color="#FF0000" style='mso-ignore:color'>-281,475,694.45</font></td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl72 style='height:14.25pt;border-top:none'>四、现金净增加额</td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'><font
+  color="#FF0000" style='mso-ignore:color'>-824,304.23</font></td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'><font
+  color="#FF0000" style='mso-ignore:color'>-34,849,548.41</font></td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'><font
+  color="#FF0000" style='mso-ignore:color'>-19,859,907.34</font></td>
+  <td class=xl66 align=right style='border-top:none;border-left:none'><font
+  color="#FF0000" style='mso-ignore:color'>-133,507,543.23</font></td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl123 style='height:14.25pt;border-top:none'><span
+  style='mso-spacerun:yes'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span>加：期初现金金额</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>0.00</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>0.00</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>0.00</td>
+  <td class=xl124 align=right style='border-top:none;border-left:none'>0.00</td>
+ </tr>
+ <tr height=19 style='height:14.25pt'>
+  <td height=19 class=xl77 style='height:14.25pt;border-top:none'>五、期末现金余额</td>
+  <td class=xl125 align=right style='border-top:none;border-left:none'>191,979,178.54</td>
+  <td class=xl125 align=right style='border-top:none;border-left:none'>157,129,630.13</td>
+  <td class=xl125 align=right style='border-top:none;border-left:none'>137,269,722.79</td>
+  <td class=xl125 align=right style='border-top:none;border-left:none'>3,762,179.56</td>
+ </tr>
+ <![if supportMisalignedColumns]>
+ <tr height=0 style='display:none'>
+  <td width=254 style='width:191pt'></td>
+  <td width=124 style='width:93pt'></td>
+  <td width=124 style='width:93pt'></td>
+  <td width=124 style='width:93pt'></td>
+  <td width=124 style='width:93pt'></td>
+ </tr>
+ <![endif]>
+</table>
+
+
+<br>
+<br>
 ## Markdown 高级技巧
 ### 支持的HTML元素
 不在Markdown涵盖范围之内的标签，都可以直接在文档里面使用HTML撰写。
@@ -372,7 +504,7 @@ $$
 ### 上下标
   -  上标: ^
   -  下标: _
-例如: C_n^2 呈现为 $C_n^2$
+例如: `C_n^2` 呈现为 $C_n^2$
 
 ### 矢量
 \vec a 呈现为 $\vec a$
@@ -408,4 +540,338 @@ $$
 - 根式: \sqrt[x]{y} 呈现为 $\sqrt[x]{y}$ 
 
 2020年6月29日 https://www.jianshu.com/p/a0aa94ef8ab2/
+
 ### 特殊函数
+ - \函数名
+  - 例如: \sin x ,\ln x ,\max(A,B,C) 呈现为$\sin x$ ，$ln x$，$max(A,B,C)$
+
+
+### 特殊的符号
+|符号|命令|
+|:-:|:-:|
+|$\infty$ |\infty|
+|$\cup$ |\cup|
+|$\cap$ |\cap|
+|$\subset$ |\subset|
+|$\subseteq$ |\subseteq|
+|$\supset$ |\supset|
+|$\in$ |\in|
+|$\notin$ |\notin|
+|$\varnothing$ |\varnothing|
+|$\forall$ |\forall|
+|$\exists$ |\exists|
+|$\lnot$ |\lnot|
+|$\nabla$ |\nabla|
+|$\partial$ |\partial|
+
+<br>
+
+
+### 空格
+- LaTeX语法本身会忽略空格的存在
+- 小空格: a\b 呈现为 $a\ b$
+- 4格空格: a\quad b 呈现为 $a\quad b$
+
+<br>
+### 矩阵
+其实标记 \begin{matrix} ,结束标记 \end{matrix}，每一行末尾标记\\\，行间元素之间以&分隔。例如:
+
+$$
+\begin{matrix}
+1&0&0\\
+0&1&0\\
+0&0&1\\
+\end{matrix}
+$$
+
+
+### 矩阵边框
+- 在起始、结束标记处用下列词语替代matrix
+- pmatrix:小括号边框
+- bmatrix:中括号边框
+- Bmatrix:大括号边框
+- vmatrix:单竖线边框
+- Vmatrix:双竖线边框
+
+
+
+$$
+\begin{pmatrix}
+1&0&0\\
+0&1&0\\
+0&0&1\\
+\end{pmatrix}
+$$
+
+
+$$
+\begin{bmatrix}
+1&0&0\\
+0&1&0\\
+0&0&1\\
+\end{bmatrix}
+$$
+
+$$
+\begin{Bmatrix}
+1&0&0\\
+0&1&0\\
+0&0&1\\
+\end{Bmatrix}
+$$
+
+$$
+\begin{vmatrix}
+1&0&0\\
+0&1&0\\
+0&0&1\\
+\end{vmatrix}
+$$
+
+$$
+\begin{Vmatrix}
+1&0&0\\
+0&1&0\\
+0&0&1\\
+\end{Vmatrix}
+$$
+
+
+
+### 省略元素
+- 横省略号: \cdots
+- 竖省略号: \vdots
+- 斜省略号: \ddots
+
+例如：
+$$\begin{bmatrix}
+{a_{11}}&{a_{12}}&{\cdots}&{a_{1n}}\\
+{a_{21}}&{a_{22}}&{\cdots}&{a_{2n}}\\
+{\vdots}&{\vdots}&{\ddots}&{\vdots}\\
+{a_{m1}}&{a_{m2}}&{\cdots}&{a_{mn}}\\
+\end{bmatrix}
+$$
+
+
+
+### 阵列
+- 需要array环境：起始、结束出以{array}声明
+- 对其方式：在{array}后以{}逐行统一声明
+  - 左对齐：l ，居中对其：c ，右对齐：r 。
+  - 竖直线：在声明对其方式时，插入|建立竖直线
+- 插入水平线： \hline
+
+例如：
+$$
+\begin{array}{c|lcr}
+{↓}&{a}&{b}&{c}\\
+\hline
+{R_1}&{c}&{d}&{a}\\
+{R_2}&{e}&{b}&{c}\\
+\end{array}
+$$
+
+
+
+### 方程组
+- 需要cases环境: 起始、结束出以{cases}声明
+例如：
+$$
+\begin{cases}
+a_1x+b_1y+c_1z=d_1\\
+a_2x+b_2y+c_2z=d_2\\
+a_3x+b_3y+c_3z=d_3\\
+\end{cases}
+$$
+
+<br>
+<hr>
+# vscode 插件Markdown preview Enhanced中code chunk使用
+
+Markdown Preview Enhanced是一款为Atom以及vs code编辑器编写的超级强大的Markdown插件。这款插件意在让你拥有飘逸的Markdown协作体验。
+
+### 特性
+- 自动编辑器及预览滑动同步
+- 导入外部文件
+- Code Chunk
+- Pandoc
+- Prince
+- 电子书
+- 幻灯片
+- 可扩展性
+- LaTeX数学
+- 导出PDF、PNG、以及JPEG凭借Puppeteer
+- 导出漂亮的HTML（移动端支持）
+- 编译到github Flavored Markdown
+- 自定义预览 CSS
+- TOC生成
+- 流程图、时序图以及各种其他种类的图形
+- 嵌入LaTeX，渲染TikZ，Chemfig等图形
+- Task List
+- 图片助手
+- 脚注
+- Front Matter
+- 以及其他
+
+
+
+## Markdown基本要素
+如果给标题欠佳id或者class，请在标题最后添加{#id .class1 .class2}
+
+例如：
+# 这个是拥有1个id的标题 {#1}
+
+# 这个标题有两个classes {.class1 .class2}
+这个是MPE扩展的特性。
+
+### 引用
+> 我们自共产主义的接班人！
+> 我们是事件
+
+### 分隔线
+> \----- 连字符
+> \***** 星号
+> \_____ 下划线
+
+### 行内代码
+`Console.WriteLine()`
+
+```csharp
+public class A{
+  public static void main(string[] args){
+    Console.WriteLine("fef");
+  }
+}
+```
+
+
+### 代码块class （MPE扩展的特性）
+你可以给你的代码块设置class。
+例如,添加 class1 class2 到一个代码块：
+```javascript {.class1 .class}
+function add(x,y){
+  return x+y
+}
+```
+
+#### 代码行数
+代码行数，只要添加line-numbers class就可以了。
+例如：
+```javascript {.line-numbers}
+function add(x,y){
+  return x+y
+}
+```
+
+
+### 任务列表
+- [x] @mentions,#refs,[links](),**formatting**,and <del>tags</del> suppor
+- [ ] list syntax required (any unordered or ordered list supported)
+- [ ] this is an incomplete item 
+
+### 上标、下标（使用^^和__将上标和下标的围起来）
+扩展上标 `30^th^  30^2` 显示 30^th^
+扩展下标 `H~2~O`  显示 H~2~O
+
+没有扩展的上标：
+`$30^9$   $30^{tf}$   $30^{fe}$` 显示 $30^9$   $30^{tf}$   $30^{fe}$
+
+没有扩展的下标：
+`$C_1$  $C_{23}$` 显示 $C_1$   $C_{23}$
+
+
+### 脚注
+
+`Content [^文献19fe]`
+`[^文献19fe]:这个是脚注`
+显示：
+Content [^文献19fe]
+[^文献19fe]:这个是脚注
+
+
+### 标记
+`==marked==`  ==marked==
+
+### CriticMarkup
+CriticMarkup默认是禁用的，你可以通过插件设置来启动。
+这里有5种基本语法：
+- 添加{++ ++}
+- 删除{-- --}
+- 替换{~~  ~> ~~}
+- 注释{>>  <<}
+- 高亮{== ==}
+
+
+## 数学
+Markdown Preview Enhanced使用KaTeX或者MathJax来渲染数学表达式。
+
+KaTeX拥有比MathJax更快的性能，但是他却少了很多MathJax拥有的特性。
+默认下的分隔符：
+- `$...$  或者 \(...\)`中的数学表达式将会行内显示。
+- `$$...$$  或者  \[...\]  或者 ```math `中的数学表达式将会在块内显示。
+
+
+<br>
+<hr>
+## 图像
+Markdown Preview Enhanced 内部支持 `flow charts , sequence diagrams , mermaid , PlantUML , WaveDrom, GraphViz,Vega-lite, Ditaa  `图像渲染。你也可以通过使用Code Chunk来渲染， `TikZ,Python Matplotlib,plotly` 等图像。 
+
+
+
+### Flow Charts
+这一特性基于flowchart.js
+- `flow ` 代码块中的内容将会被flowchart.js渲染。
+
+示例：
+
+```flow
+st=>start: Start:>http://www.google.com[blank]
+e=>end:> http://www.google.com
+op1=>operation: My Operation
+sub1=>subroutine: My Subroutine
+cond=>condition: Yes
+or No?:> http://www.google.com
+io=>inputoutput: catch something
+
+st->op1-cond
+cond(yes)->io->e
+cond(no)->sub1(right)->op1
+```
+
+
+### Sequence Diagrams
+- sequence 代码块中的内容将会被js-sequence-diagrams渲染。
+- 支持两个主题 `simple （默认）` 和 `hand`
+
+\`\`\`sequence {theme="simple"}
+Andrew->China: Says Hello
+Note right of China: China thinks\nabout it
+China-->Andrew: How are you?
+Andrew->>China: I am good thanks!
+\`\`\` 
+
+```sequence {theme="simple"}
+Andrew->China: Says Hello
+Note right of China: China thinks\nabout it
+China-->Andrew: How are you?
+Andrew->>China: I am good thanks!
+```
+
+---
+
+
+\```sequence {theme="hand"}
+Andrew->China: Says Hello
+Note right of China: China thinks\nabout it
+China-->Andrew: How are you?
+Andrew->>China: I am good thanks!
+\```
+
+```sequence {theme="hand"}
+Andrew->China: Says Hello
+Note right of China: China thinks\nabout it
+China-->Andrew: How are you?
+Andrew->>China: I am good thanks!
+```
+
+[2020年6月30日17:05分](https://shd101wyy.github.io/markdown-preview-enhanced/#/zh-cn/diagrams?id=flow-charts)
