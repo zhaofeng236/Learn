@@ -1,3 +1,4 @@
+
 Markdown是一种轻量级标记语言，它允许人们使用易读易写的纯文本编写文档。
 Markdown编写的文档可以到处HTML、Word、图像、PDF、Epub等多种格式的文档。
 Markdown编写的文档后缀为.md，.markdown。
@@ -1164,3 +1165,203 @@ Markdown Preview Enhanced 支持vega以及vega-lite的静态图像
 ```
 
 [2020年6月30日学习](https://shd101wyy.github.io/markdown-preview-enhanced/#/zh-cn/diagrams)
+
+
+
+你也可以`@import `一个`JSON`或者`YAML`文件作为`vega`图像，例如：
+
+> @import "your_vega_source.json" {as="vega"}
+> @import "your_vega_lite_source.json" {as="vega-lite"}
+
+
+
+### Ditaa
+Markdown Preview Enhanced支持ditaa。
+需要事先安装好java。
+
+<hr>
+<br>
+
+## 目录列表（TOC）
+你可以通过cmd-shift-p然后选择Markdown Preview Enhanced：Create Toc命令来创建`TOC`。多个TOCs可以被创建。如果你想要在你的`TOC`中排除一个标题，请在你的标题后面添加`{ignore=true}` 即可
+
+* [Chapter 1](#chapter-1)
+ * [Section 1.1](#section-11)
+ * [Section 1.2](#section-12)
+   * [Section 1.3.1](#section-131)
+* [Chapter 2](#chapter-2)
+
+# Chapter 1
+## Section 1.1
+## Section 1.2
+## Section 1.3 {ignore= true}
+### Section 1.3.1
+# Chapter 2
+
+
+TOC将会在你的Markdown文件保存时更新。你需要保持预览打开才能更新TOC。
+
+
+### 设置
+- orderedList是否使用有序列表。
+- depthFrom,depthTo `[1~6]`包含的。
+- ignoreLink 如果设置为true，那么TOC将不被超链接。
+
+
+你也可以在你的markdown文件中输入 `[TOC]` 来创建TOC。例如：
+
+> [TOC]
+> \# 标题 1
+> \## 标题2 {ignore=true}
+> 标题2将会被目录忽略。
+> 但是,这种方式创建的`TOC`只会在预览中显示，而不会修改你的Markdown文件。
+
+
+
+### [TOC]以及边栏TOC的设置
+你可以通过编写front-matter来进行设置：
+
+---
+toc:
+  depth_from: 1
+  depth_to: 6
+  ordered: false
+---
+
+## 导入外部文件
+doc-imports
+
+> @import "你的文件"。
+> 或者是<!-- @import "your_file" --
+
+### 刷新按钮
+刷新按钮可以在你的预览右上角找到。点击它就会清空文件缓存并且刷新预览。这个功能会十分有用，如果你想要清除图片缓存。
+
+
+### 支持的文件类型
+- `.jpeg(jpg),gif,.png,.apng,.svg,.bmp` 等文件将会直接被当做markdown图片被引用。
+- .csv文件将会被转换成markdown表格
+- .mermaid 将会被mermaid渲染
+- .dot 文件将会被viz.js（graphviz)渲染。
+- .plantuml（.puml）文件将会被PlantUML渲染
+- .html 将会直接被引用
+- .js 将会被引用为<script src="你的js文件"></script>。
+- .less和.css将会被引用为style。目前less只支持本地文件。.css文件会被引用为<link rel="stylesheet" href="你的CSS文件">
+- .pdf 文件将会被pdf2svg转换为svg然后被引用。
+- markdown将会被分析处理，然后被引用。
+- 其他所有的都将被视为代码块。
+
+
+### 设置图片
+> @import "test.png" {width="300px" height="200px" title="图片的标题" alt="我的alt"}
+
+### 引用在线文件
+例如：
+> @import "https://raw.githubusercontent.com/shd101wyy/markdown-preview-enhanced/master/LICENSE.md"
+
+### 引用PDF文件
+如果你要引用PDF文件，你需要事先安装好pdf2svg。支持本地或在线的PDF文件，但引用较大的PDF文件不推荐。
+> @import "test.pdf"
+> PDF设置：
+> page_no显示nth页。例如{page_no=1} 将会只显示PDF文件的第一页。
+> page_begin,page_end包含的。例如{page_begin=2 page_end=4}，将会显示2、3、4页。
+
+
+### 导入特定行数
+> @import "test.md" {line_begin=2}
+> @import "test.md" {line_begin=2 line_end=10}
+
+## Code Chunk
+markdown Preview Enhanced支持渲染代码的运行结果。
+
+```bash{cmd=true}
+ls .
+```
+
+脚本运行默认是禁用的，并且需要在插件中开启，因为这很可能造成安全问题。当你的脚本运行设置开启的，你的电脑很可能被黑客攻击。
+设置名称：`enableScriptExecution`
+
+- `Markdown Preview Enhanced：Run Code Chunk` 或者shift-enter运行你现在贯标所在的一个code chunk。
+- `Markdown Preview Enhanced：Run All Code Chunks` 或者ctrl-shift-enter运行所有的code chunks。
+  
+
+### 格式
+你可以通过以下形式设置code chunk：` ```lang {cmd=your_cmd opt1=value1 opt2=value2} ```  `
+
+如果一个属性的值是true，那么他可以被省略，`(e.g. {cmd hide} 和{cmd=true hide=true} 相同)`
+
+lang你想要代码所高亮的语言。这个需要被放在最前面。
+
+
+### 基本设置
+cmd强要被运行的命令。如果`cmd`没有被提供，那么lang将会被认为是命令。
+例如：
+
+> 例如：
+\```python {cmd="/usr/local/bin/python3"}
+print("这个将会运行python3 程序!")
+\```
+
+
+output `html,markdown,text,png,none`
+设置你想要如何显示你的代码结果。html将会添加输出结果为html。markdown将会添加输出结果为markdown。
+text 将会添加输出结果到pre块，png将会添加输出结果到base64图片。none将会隐藏输出结果。
+
+> 例如：
+\```gnuplot {cmd=true output="html"}
+set terminal svg
+set title "Simple Plots" font ",20"
+set key left box
+set samples 50
+set style data points
+plot [-10:10] sin(x),atan(x),cos(atan(x))
+\```
+
+
+```gnuplot {cmd=true output="html"}
+set terminal svg
+set title "Simple Plots" font ",20"
+set key left box
+set samples 50
+set style data points
+
+plot [-10:10] sin(x),atan(x),cos(atan(x))
+```
+
+
+args需要被添加到命令args。例如：
+```python {cmd=true args["-v"]}
+print("Verbose will be printed first")
+```
+
+
+
+### Matplotlib
+如果设置matplotlib=true，那么你的python code chunk将会在你的预览中绘制图像。
+> 例如：
+\```python {cmd=true matplotlib=true}
+import matplotlib.pyplot as plt
+plt.plot([1,2,3,4])
+plt.show()
+\```
+
+
+### Demo
+下面的例子展示了如何利用erd库绘制ER diagram。
+> 
+\```erd {cmd=true output="html" args=["-i", "$input_file", "-f", "svg"]}
+
+[Person]
+*name
+height
+weight
++birth_location_id
+
+[Location]
+*id
+city
+state
+country
+
+Person *--1 Location
+\```
