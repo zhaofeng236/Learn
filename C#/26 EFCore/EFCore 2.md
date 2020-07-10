@@ -489,3 +489,229 @@ protected override void OnModelCreating(ModelBuilder modelBuilder)
 - 在DotnetCliToolReference元素中添加Microsoft.EntityFrameworkCore.Tools.Dotntet。
 - Microsoft.EntityFrameworkCore.Design包只需要用于项目本身，包需要引用这个包的其他项目，所以可以指定PrivateAssets特性。
 (项目文件：ScaffoldSample/ScaffoldSample.Csproj)
+
+
+```html
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.5" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.1.5" />
+  </ItemGroup>
+
+</Project>
+```
+
+安装了工具后，就可以在Develpoer Command Prompt中启动dotnet ef命令：
+> dotnet ef dbcontxt scaffold
+> "server=(localdb)\MSSQLLocalDb;database=MenuCards;trusted_connection=true"
+> "Microsoft.EntityFrameworkCore.SqlServer"
+
+dbcontext命令允许列出项目中的DbContext对象，创建DBContext对象。scaffold命令创建DbContext派生类以及模型类。
+`dotnet ef dbcontext scaffold`命令需要两个参数：数据库的连接字符串和应该使用的提供程序。
+
+
+### 映射到字段
+EF Core不仅允许将表列映射到属性，还允许映射到私有字段。因此可以创建只读属性，使用在类之外无法访问的私有字段。
+
+Book类包含一个私有字段`_bookId` ，该字段只能在类中访问（他在ToString方法中使用）。Title是一个读/写属性，Publisher是一个只读属性。发布者使用字段_publisher。
+
+EF Core在勒种需要一个默认的构造函数，但这个构造函数可以通过private访问修饰符声明。
+
+代码：
+```csharp
+    public class Book1
+    {
+
+        private int _bookId = 0;
+        public int BookId => _bookId;
+        public string Title { get; set; }
+
+        private string _publisher;
+        public string Publisher => _publisher;
+        private Book1() { }
+
+        public Book1(string title,string publisher)
+        {
+            Title = title;
+            _publisher = publisher;
+        }
+
+        public override string ToString() =>
+            $"id:{_bookId} ,title:{Title},publisher:{Publisher}";
+
+    }
+```
+
+为了避免输入错误，对于列明，定义具有强类型列明的类ColumnNames。另外，using static声明访问没有类名的const值。
+
+```csharp
+using static BooksSample.Columnnames;
+
+internal class ColumnNames
+{
+    public const string LastUpdated=nameof(LastUpdated);
+    public const string IsDeleted=nameof(IsDeleted);       
+    public const string BookId=nameof(BookId);
+    public const string AuthorId=nameof(AuthorId);
+}
+```
+
+属性Publisher现在可以配置为使用HasField方法映射到相应的字段。
+_bookId没有相应的属性，因此它配置了Property方法的一个重载，该方法将名称指定为string。这将数据库表中的BookId列映射到字段_bookId。代码（BooksSample/BooksContext.cs）:
+
+```csharp
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    base.OnModelCreating(modelBuilder);
+    ///...
+    modelBuilder.Entity<Book1>().Property(b=>b.Title)
+      .IsRequired()
+      .HasMaxLength(50);
+    
+    modelBuilder.Entity<Book1>().Property(b=>b.Publisher)
+      .HasField("_publisher")
+      .IsRequired(false)
+      .HasMaxLength(30);
+    
+    modelBuilder.Entity<Book1>().Property<int>(BookId)
+      .HasField("_bookId")
+      .IsRequired();
+    
+    modelBuilder.Entity<Book1>()
+      .HasKey(BookId);
+}
+```
+
+在创建Book对象时，需要使用构造函数。属性没有set访问器。初始化Book对象后，使用AddRangeAsync方法将其添加到BooksContext中。（BooksSample/Program.cs）
+
+```csharp
+private async Task AddBooksAsync()
+{
+    using(var context=new BooksContext())
+    {
+        var b1=new Book("乌合之众 "," 中国出版社");
+        var b2=new Book("今日头条 "," 今日出版社");
+        var b3=new Book(" 阿里不可告人的内幕"," 私人出版社");
+        var b4=new Book(" 餐琼脂上","人民出版社 ");
+        await context.Books.AddRangeAsync(b1,b2,b3,b4);
+
+        int records=await context.SaveChangesAsync();
+
+        Console.WriteLine($"{records} 条记录被增加");
+    }
+}
+```
+
+
+
+
+### 阴影属性
+EF Core不仅允许将数据库列映射到私有字段，还可以定义一个在模型中根本不显示的映射。可以使用阴影属性，这些属性可以用上下文中的实体来检索，但不能用于模型。
+
+阴影属性定义为字符串。为了避免在多次使用这些字符串时出现拼写错误，指定了一个定义常量字符串的类。（BooksSample/BooksContext.cs）
+
+```csharp
+public class ColumnNames
+{
+    public const string LastUpdated=nameof(LastUpdated);
+    public const string IsDeleted=nameof(IsDeleted);
+    public const string BookId=nameof(BookId);
+}
+
+要访问类的成员而不使用类名，使用using static声明：
+
+using static MappingToFields.ColumnNames;
+```
+
+下面代码片段使用前面定义的前类型字符串来定义IsDeleted和LastUpdated阴影属性：
+```csharp
+base.OnModelCreating(modelBuilder);
+///...
+/// shadow properties
+
+modelBuilder.Entity<Book>().Property<bool>(IsDeleted);
+modelBuilder.Entity<Book>().Property<DateTime>(LastUpdated);
+```
+
+阴影属性LastUpdated用于编写实体最后更新的实际时间。
+IsDeleted属性用于定义删除实体的状态，而不是删除它。有时候，不删除用户请求的数据，而把它标记为已删除是很有用的。这允许执行撤销来恢复实体，并提供历史信息。
+
+要自动更新阴影属性LastUpdated，需要重写SaveChangesAsync方法。如果使用同步SaveChanges方法向数据库写入更改，那么也需要重写此方法。在实现代码中，将检查实体的实际状态。如果状态是Added、Modified或Deleted，则使用当前时间更新阴影属性。要管理阴影属性IsDeleted，删除的实体改为Modified状态，IsDeleted阴影属性设置为true。阴影属性在允许访问它的模型中没有属性；相反，可以使用EntityEntry的CurrentValues索引器（BooksSample/BooksContext.cs）。
+
+```csharp
+
+public override Task<int> SaveChangesAsync(CancellationToken cancellationToken=default)
+{
+    ChangeTracker.DetectChanges();
+
+    foreach(var item in ChangeTracker.Entries<Book>()
+      .Where(e=>e.State==EntitysState.Added ||
+             e.State==EntityState.Modified||
+             e.State==EntityState.Deleted))
+    {
+        item.CurrentValues[LastUpdated]=DateTime.Now;
+
+        if(item.State==EntityState.Deleted)
+        {
+            item.State=EntityState.Modified;
+            item.CurrentValues[IsDeleted]=true;
+        }
+    }
+    return base.SaveChangesAsync(cancellationToken);
+}
+```
+> 示例代码使用的更改跟踪器，请参见“对象跟踪”
+
+> 注意：有了IsDeleted属性，在使用正常查询时，最好不返回设置了IsDeleted属性的实体。而可以使用EF Core2.0的特性——全局查询过滤器来实现这一点。
+
+
+为了显示已删除的实体，定义了DeleteBookAsync方法，该方法使用传递给该方法的ID来删除实体。在这里，通过传递实体对象来调用Remove方法，并调用SaveChanges。(BooksSample/Program.cs)：
+
+```csharp
+
+private async Task DeleteBookAsync(int id)
+{
+    using(var context=new BooksContext())
+    {
+        Book b=await context.Books.FindAsync(id);
+        if (b==null) return;
+        context.Books.Remove(b);
+        int records=await context.SaveChangesAsync();
+        Console.WriteLine($"{records} 条记录的图书被删除!");
+    }
+}
+
+```
+
+在幕后，由于对SaveChangesAsync方法的更改而设置了IsDeleted阴影属性。要验证这一点，可以使用方法`EF.Property `，通过传递IsDeleted字符串，来访问阴影属性。所有带有此标志的Book实体都显示在QueryDeletedBooksAsync方法中:
+
+```csharp
+
+private async Task QueryDeletedBooksAsync()
+{
+    using(var context=new BooksContext())
+    {
+        IEnumerable<Book> deletedBooks=
+          await context.Books
+            .Where(b=>EF.Property<bool>(b,IsDeleted))
+        
+        foreach(var book in deletedBooks)
+        {
+            Console.WriteLine($"deleted: {book}");
+        }
+    }
+}
+
+```
