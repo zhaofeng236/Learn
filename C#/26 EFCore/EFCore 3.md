@@ -365,3 +365,512 @@ EF Core除了显示加载相关数据，导致想SQL Server发送多个查询之
 <br>
 
 ### 即时加载相关数据
+当执行查询时，可以通过调用Include方法并指定关系，来立即加载相关数据。下面代码片段包括成功应用Where表达式的书中张姐和作者（RelationUsingConventions/Program.cs）。
+
+```csharp
+
+private static ovid EagerLoading()
+{
+    using(var context=new BooksContext())
+    {
+        var book=context.Books
+          .Include(b=>b.Chapters)
+          .Include(b=>b.Author)
+          .Where(b=>b.Title.StartsWith("乌合之众"))
+          .FirstOrDefault();
+        
+        if(book!=null)
+        {
+            Console.WriteLine(ook.Title);
+
+            Console.WriteLine(book.Author.Name);
+
+            foreach(var chapter in book.Chapters)
+            {
+                Console.WriteLine($"{chapter.Number}.{chapter.Title}");
+            }
+        }
+    }
+}
+
+```
+
+使用Include，只需要执行一条SQL语句来访问Books表，并连接Chapters和Users表：
+
+如果需要包含多个层次的关系，那么方法ThenInclude可以用于Include方法的结果。
+
+
+<hr>
+<br>
+
+### 使用注释的关系
+与使用约定不同，实体类型可以通过应用关系信息进行注释。下面向关系属性添加` ForeignKey `属性，来修改先前创建的Book类型，并指定表示外键的属性。在这里，Book不仅与该书的作者有关联，也与审稿人和项目编辑有关联。这些关系映射到User类型。外键属性定义为int类型吗？让他们变成可选项。使用枪支关系，EF Core创建级联删除；删除Book时，相关的作者、编辑和审稿人也被删除。（RelationUsingAnnotations/Book.cs）
+
+
+```csharp
+
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+
+public class Book
+{
+    public int BookId {get;set;}
+    public string Title {get;set;}
+    public List<Chapter> Chapters{get;}=new List<Chapter>();
+
+    public int? AuthorId {get;set;}
+
+    [ForeignKey(nameof(AuthorId))]
+    public User Author {get;set;}
+    public int? ReviewerId {get;set;}
+
+    [ForeignKey(nameof(ReviewerId))]
+    public User Reviewer {get;set;}
+
+    public int? ProjectEditorId {get;set;}
+
+    [ForeignKey(nameof(ProjectEditorId))]
+    public User ProjectEditor {get;set;}
+}
+
+```
+
+
+```csharp
+User类与Book类型有多个关联
+-----------------------------------------------
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+
+public class User
+{
+    public int UserId {get;set;}
+
+    public string Name {get;set;}
+
+    [InverseProperty("Author")]
+    public List<Book> WritenBooks {get;set;}
+
+    [InverseProperty("Reviewer")]
+    public List<Book> ReviewedBooks {get;set;}
+
+    [InverseProperty("ProjectEditor")]
+    public List<Book> EditedBooks {get;set;}
+}
+
+```
+
+WritenBooks属性列出了添加为author的用户的所有图书。类似，ReviewedBooks和EditedBooks属性与Book类型仅仅在Reviewer和ProjectEditor属性上相关联。
+
+如果相同类型之间存在多个关系，则需要使用InverseProperty特性对属性进行注释。使用这个特性，指定关系另一端的相关属性。
+
+
+
+<hr>
+<br>
+
+### 使用流利API的关系
+指定关系最强大方法是使用流利API。
+
+- 在流利API中，使用hasOne和WithOne方法定义一对一关系。
+- 使用HasOne和WithMany方法定义一对多关系；
+- 使用HasMany和WithOne定义多对一的关系。
+
+模型类型不包括数据库模式上的任何注释。（RelationUsingFluentAPI/Book.cs)。
+
+```csharp
+Book类是一个简单的POCO类型，他定义了图书信息的属性，包括关系属性。
+--------------------------------------------------------
+public class Book
+{
+    public int BookId {get;set;}
+    public string Title {get;set;}
+    public List<Chaper> Chapters {get;}=new List<Chapter>();
+
+    public User Author {get;set;}     //作者
+    public User Reviewer {get;set;}   //审稿人
+    public User Editor {get;set;}     //编辑
+}
+
+```
+
+User类型的定义也是类似。除了具有Name属性外，User类型还定义了与Book类型的三种不同关系。
+
+```csharp
+User类型的定义也是类似。除了具有Name属性外，User类型还定义了与Book类型的三种不同关系。
+---------------------------------------------------------
+public class User
+{
+    public int UserId {get;set;}
+    public string Name {get;set;}
+
+    public List<Book> WritenBooks {get;set;}
+    public List<Book> ReviewedBooks {get;set;}
+    public List<Book> EditedBooks {get;set;}
+}
+
+```
+
+
+
+```csharp
+Chapter类与Book类有关联。然而，Chapter类与Book类不同，因为Chapter类还定义了一个属性来关联一个外键：BookId。
+--------------------------------------------------------
+
+public class Chapter
+{
+    public int ChapterId {get;set;}
+    public int Number {get;set;}
+    public string Title {get;set;}
+    public int BookId {get;set;}
+    public Book Book {get;set;}
+}
+
+```
+
+模型类型之间的映射现在在BooksContext的OnModelCreating方法中定义。
+
+- Book类与多个Chapter对象相关联；这是使用HasMany和WithOne定义的。
+- Chapter类与一个Book对象相关联；这是使用HasOne和WithMany定义的。因为Chapter类中还有一个外键属性，所以使用HasForeignKey方法来指定这个外键。
+
+```csharp
+
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+public class BooksContext:DbContext
+{
+    private const string ConnectionString =
+      @"server=localhost;" +
+      @"database=BooksStore;" +
+      @"trusted_connection=true;";
+    
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+
+        optionsBuilder.UseSqlServer(ConnectionString);
+    }
+
+
+    public DbSet<Book> Books {get;set;}
+    public DbSet<Chapter> Chapters {get;set;}
+    public DbSet<User> Users {get;set;}
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Book>().HasMany(b=>b.Chapters).WithOne(c=>c.Book);
+        modelBuilder.Entity<Book>().HasOne(b=>b.Author).WithMany(a.WrittenBooks);
+        modelBuilder.Entity<Book>().HasOne(b=>b.Reviewer).WithMany(r=>r.ReviewedBooks);
+        modelBuilder.Entity<Book>().HasOne(b=>b.Editor).WithMany(e=>e.EditedBooks);
+
+
+        modelBuilder.Entity<Chapter>().HasOne(c=>c.Book).WithMany(b=>b.Chapters).HasForeignKey(c=>c.BookId);
+
+
+        modelBuilder.Entity<User>().HasMany(a=>a.WrittenBooks).WithOne(b=>b.Author);
+        modelBuilder.Entity<User>().HasMany(r=>r.ReviewedBooks).WithOne(b=>b.Reviewer);
+        modelBuilder.Entity<User>().HasMany(e=>e.EditedBooks).WithOne(b=>b.Editor);
+    }
+    
+}
+
+```
+
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+
+namespace EFCore_test
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            Console.WriteLine("这个是EFCore 学习程序");
+
+            CreateDatabase();
+            AddBooks();
+            GetBooksByUsers();
+
+            //DeleteDatabase();
+
+
+
+            Console.ReadKey();
+        }
+
+
+        //创建数据库
+        private static void CreateDatabase()
+        {
+            using(var context=new BooksContext())
+            {
+                context.Database.EnsureCreated();
+            }
+        }
+
+
+        //删除数据库
+        private static void DeleteDatabase()
+        {
+            Console.WriteLine("删除这个数据库吗？");
+            string input = Console.ReadLine();
+            if (input.ToLower() == "y")
+            {
+                using(var context=new BooksContext())
+                {
+                    context.Database.EnsureDeleted();
+                }
+            }
+        }
+
+        //添加数据
+        private static void AddBooks()
+        {
+            Console.WriteLine(nameof(AddBooks));
+            using (var context = new BooksContext())
+            {
+                var author = new User
+                {
+                    Name = "赵峰"
+                };
+                var reviewer = new User
+                {
+                    Name = "雅淇"
+                };
+                var editor = new User
+                {
+                    Name = "雅楠"
+                };
+                var b1 = new Book
+                {
+                    Title = "乌合之众",
+                    Editor= editor,
+                    Reviewer = reviewer,
+                    Author = author
+                };
+
+                var c1 = new Chapter
+                {
+                    Title = "早上起床",
+                    Number = 1,
+                    Book = b1
+                };
+                var c2 = new Chapter
+                {
+                    Title = "中午吃饭",
+                    Number = 2,
+                    Book = b1
+                };
+                var c3 = new Chapter
+                {
+                    Title = "晚上睡觉",
+                    Number = 28,
+                    Book = b1
+                };
+
+                context.Books.Add(b1);
+                context.Users.AddRange(author, editor, reviewer);
+                context.Chapters.AddRange(c1, c2, c3);
+
+                int records = context.SaveChanges();
+
+                Console.WriteLine($"{records} 条记录被增加");
+            }
+            Console.WriteLine();
+        }
+
+
+
+
+        //显示数据
+        private static void GetBooksByUsers()
+        {
+            using(var context=new BooksContext())
+            {
+                var users = context.Users.Include(u => u.WrittenBooks)
+                    .Include(u => u.ReviewedBooks)
+                    .Include(u => u.EditedBooks);
+
+                foreach(var user in users)
+                {
+                    Console.WriteLine(user.Name);
+
+                    foreach(var book in user.WrittenBooks)
+                    {
+                        Console.WriteLine($"\t 书名:{book.Title}");
+                    }
+                    
+                    foreach(var book in user.ReviewedBooks)
+                    {
+                        Console.WriteLine($"\t 审稿人:{book.Title}");
+                    }
+
+                    foreach(var book in user.EditedBooks)
+                    {
+                        Console.WriteLine($"\t 编辑:{book.Title}");
+                    }
+
+                }
+            }
+        }
+
+
+    }
+}
+
+
+```
+
+
+<hr>
+<br>
+
+### 根据约定的每个层次结构的表
+EF Core还支持每个层次结构中标（TablePerHierarchy，TPH）关系类型。使用这种关系，形成层次结构的多个模型类用于映射到单个表。这种关系可以使用约定和流利API来指定。
+
+下面开始使用约定和形成层次结构的类型Payment、CashPayment、CreditcardPayment。Payment是一个基类；CashPayment和CreditcardPayment均派生自它。
+
+在实现代码中，Payment类定义了主键，其中包括PaymentId属性、所需的Name和Amount属性。Amount属性映射到数据库中的一个列类型Money（TPHWithConventions/Payment.cs）。
+
+pyment: 支付
+creditcard Payment：信用卡支付
+cash Payment: 现金支付
+
+```csharp
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TPHWithConventions
+{
+    public class Payment
+    {
+        public int PaymentId { get; set; }
+
+        [Required]
+        public string Name { get; set; }
+        [Column(TypeName = "Money")]
+        public decimal Amount { get; set; }
+    }
+}
+
+
+```
+
+CreditcardPayment类派生自Payment，还添加了CreditcardNumber属性。
+
+```csharp
+public class CreditCardPayment:Payment
+{
+    public string CreditcardNumber {get;set;}
+}
+
+```
+
+
+CashPayment类派生自Payment，但不生命任何其他成员.
+```csharp
+public class CashPayment:Payment
+{
+
+}
+```
+
+
+EF Core的上下文类BankContext为层次结构中的每个类定义了DbSet属性。
+
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+
+public class BankContext:DbContext
+{
+    private const string ConnectionString =
+      @"server=localhost;" +
+      @"database=BooksStore;" +
+      @"trusted_connection=true;";
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+
+        optionsBuilder.UseSqlServer(ConnectionString);
+    }      
+
+    public DbSet<Payment> Payment {get;set;}
+    public DbSet<CreditcardPayment> CreditcardPayments {get;set;}
+    public DbSet<CashPayment> CashPayments {get;set;}
+}
+
+```
+
+
+定义了两个CashPayment和一个CreditcardPayment支付。
+
+```csharp
+public class Program
+{
+    static void Main(string[] args)
+    {
+        CreateDatabase();
+        AddSampleData();
+        QuerySample();
+        DeleteDatabase();
+    }
+
+
+    private static void AddSampleData()
+    {
+        using(var context=new BankContext())
+        {
+            var t1=new CashPayment{Name="zhaofeng" ,Amount=0.5m}
+            var t2=new CashPayment{Name="ya na" ,Amount=2000m}
+
+            context.CashPayments.Add(t1);
+            context.CashPayments.Add(t2);
+
+            var t3=new CreditcardPayment{Name="ya qi" ,Amount=300m
+             ,CreditcardNumber="987654321"}
+             context.CreditcardPayments.Add(t3);
+
+             context.SaveChanges();
+        }
+    }
+}
+
+//当运行应用程序来创建数据库时，只创建了一个表Payments。这个表定义了一个Discriminator列，将记录从表映射到相应的模型类型。
+//只要查询层次结构中的特定类型，可以使用OfType扩展方法。在下面的代码中可以看到一个查询，该查询只返回Creditcardpayment类型的支付。
+
+    private static void QuerySample()
+    {
+        using(var context=new BankContext())
+        {
+            var creditcardPayments=context.Payments.OfType<CredditcardPayment>();
+
+            foreach(var payment in creditcardPayments)
+            {
+                Console.WriteLine($"{payment.Name},{payment.Amount}")
+            }
+        }
+    }
+
+//使用OfType ，EF Core创建一个带有Where子句的查询，该子句只区分值为CreditcardPayment的记录：
+//这个场景，还可以调用上下文属性CreditcardPayments，得到相同的查询。
+
+```
+
+<hr>
+<br>
+
+### 使用流利API的每个层次结构中的表
