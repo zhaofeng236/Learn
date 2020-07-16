@@ -874,3 +874,264 @@ public class Program
 <br>
 
 ### 使用流利API的每个层次结构中的表
+使用流利API，定义层次结构可以有更多的控制。这样，Payment类就从注释中剥离出来，它现在时一个抽象类型。
+
+```csharp
+
+//抽象类 Payment
+---------------------------------------------
+public abstract class Payment
+{
+    public int PaymentId{get;set;}
+
+    public string Name {get;set;}
+    public decimal Amount{get;set;}
+}
+
+
+//CashPayment 现金支付
+---------------------------------------------
+public class CashPayment:Payment{}
+
+
+//CreditcardPayment 信用卡支付
+public class CreditcardPayment:Payment
+{
+    public string CreditcardNumber {get;set;}
+}
+
+```
+
+鉴别器的新名称时Type。这应该时Payments表中的一列，但不应该显示在Payment类型中。应该使用字符串Cash和Creditcard来区分模型类型。对于所有字符串，定义了ColumnNames和ColumnValues类。
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+
+//鉴别器名称type
+public static class ColumnNames
+{
+    public const string Type=nameof(Type);
+}
+
+
+-------------------------------------------
+// 字段
+public static class ColumnValues
+{
+    public const string Cash=nameof(Cash);
+    public const string Creditcard=nameof(Creditcard);
+}
+
+
+------------------------------------------
+
+public class BankContext:DbContext
+{
+     private const string ConnectionString =   
+       @"server=localhost;" +
+       @"database=BooksStore;" +
+       @"trusted_connection=true;";
+    
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+
+        optionsBuilder.UseSqlServer(ConnectionString);
+    }
+
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Payment>().Property(p=>p.Name).IsRequired();
+        modelBuilder.Entity<Payment>().Property(p=>p.Amount).HasColumnType("Money");
+        modelBuilder.Entity<Payment>().Property<string>(ColumnNames.Type)
+        modelBuilder.Entity<Payment>().HasDiscriminator<string>(ColumnNames.Type)
+          .HasValue<CashPayment>(ColumnValues.Cash)
+          .HasValue<CreditcardPayment>(ColumnValues.Creditcard);
+    }
+
+
+    public DbSet<Payment> Payments{get;set;}
+}
+
+
+```
+
+这次，上下文为所有不同的Payment类型定义了一个属性Payments。当然，也可以有专门的属性，但是在前面的示例中，这是必须的。
+
+对于Name属性和Amount属性的Money类型，需要的模式信息现在是在方法OnModelCreating中指定，而不是使用注释指定。
+
+使用HasDiscriminator方法指定TPH层次结构。鉴别器的名称是Type，它也指定为一个阴影属性。派生类型的差异用HasValue方法指定。HasValue是DiscriminatorBuilder的一个方法，它是从HasDiscriminator方法返回的。
+
+
+创建的数据库与以前类似，只是表Payments现在定义了Type列，而不是Discriminator列，就像创建模型时指定的那样。询问信用卡号码的新查询会筛选Type列。
+```sql
+select p.paymentId,p.Amount,p.Name,p.Type,p.CreditcardNumber
+from Payments as p
+Where p.Type=N'Creditcard'
+
+```
+
+
+
+<hr>
+<br>
+
+### 表的拆分
+通过表的拆分，可以将数据库表拆分成多个实体类型。使用表拆分特性，属于同一个表的每个类都需要一个一对一关系，并定义自己的主键。但是，因为他们共享同一个表，所以也共享相同的主键。
+
+下面时一个Menu类的示例，它表示关于午餐菜单的信息，MenuDetails包含厨房的信息。Menu类为菜单定义了一些属性，包括Details属性。Details属性将关系映射到MenuDetails类。（TableSplitting/Menu.cs）
+
+```csharp
+
+public class Menu
+{
+    public int MenuId{get;set;}
+    public string Title{get;set;}
+    public string Subtitle{get;set;}
+    public decimal Price{get;set;}
+    public MenuDetails Details{get;set;}
+}
+```
+
+
+MenuDetails类看起来会映射到它自己的表（带有主键），并映射到具有Menu属性的Menu类。
+```csharp
+public class MenuDetails
+{
+    public int MenuDetailsId{get;set;}
+    public string KitchenInfo{get;set;}
+    public int MenusSold{get;set;}
+    public Menu Menu{get;set;}
+}
+```
+
+上下文中，Menus和MenuDetails是两个DbSet属性。在OnModelCreating方法中，Menu类使用HasOne和WithOne配置为与MenuDetails的一对一关系。现在应该注意ToTable方法的调用。
+
+默认情况下，类Menu和MenuDetails将映射到两个不同的表。这里，传递给ToTable方法的参数指定了相同的表明。
+
+Menu和MenuDetails都映射到相同的表Menu。这就造成了表分割的差异。
+
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+
+namespace TableSplitting
+{
+    public static class SchemaNames
+    {
+        public const string Menus = nameof(Menus);
+    }
+
+    public class MenusContext : DbContext
+    {
+        private const string ConnectionString = @"server=(localdb)\MSSQLLocalDb;" +
+            "Database=Menus;Trusted_Connection=True";
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+
+            optionsBuilder.UseSqlServer(ConnectionString);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Menu>().HasOne<MenuDetails>(m => m.Details).WithOne(d => d.Menu).HasForeignKey<MenuDetails>(d => d.MenuDetailsId);
+            modelBuilder.Entity<Menu>().ToTable(SchemaNames.Menus);
+            modelBuilder.Entity<MenuDetails>().ToTable(SchemaNames.Menus);
+            modelBuilder.Entity<Menu>().Property(m => m.Price).HasColumnType("money");
+        }
+
+        public DbSet<Menu> Menus { get; set; }
+        public DbSet<MenuDetails> MenuDetails { get; set; }
+    }
+}
+
+```
+通过SQL可以看到，Menu表包含Menu和MenuDetails类的列，以及只用于Menu类的主键。
+
+<hr>
+<br>
+
+### 拥有的实体
+将表分割为多个实体类型的另一种方法是使用“拥有实体”的特性。
+拥有的实体不需要主键；他们可以是在正常实体中拥有的类型。拥有实体的实体类可以映射到单个表——使用表拆分特性——也可以映射到不同的表。当使用不同的表时，他们共享相同的主键。
+
+示例展示了两种场景：使用拥有的实体和单个表，并将其映射到另一个表。
+
+下面代码显示了主要的实体类型Person。这是带有主键PersonId的拥有实体的所有者。该类型包含两个地址：
+PrivateAddress和CompanyAddres（代码：OwnedEntities/Person.cs)。
+
+```csharp
+
+public class Person
+{
+    public int PersonId{get;set;}
+    public string Name{get;set;}
+    public Address PrivateAddress{get;set;}
+    public Address CompanyAddress{get;set;}
+}
+
+```
+
+Address是一个拥有的实体，该类型没有它自己的主键。该类型有两个字符串属性，以及一个类型为Location的关系Location。Location是另一个拥有的实体。
+```csharp
+public class Address
+{
+    public string LineOne{get;set;}
+    public string LineTwo{get;set;}
+    public Location Location{get;set;}
+}
+```
+
+Location只包含Country和City属性，作为一个拥有的实体，它没有定义一个键。
+```csharp
+public class Location
+{
+    public string Country{get;set;}
+    public string City{get;set;}
+}
+```
+
+最有趣的部分出现在上下文中，其中在OnModelCreating方法中定义了拥有的实体。为了给Person类定制模型，OwnsOne的第一次调用指定Person实体拥有从CompanyAddress属性（这是一种Address类型）医用的实体。
+对OwnsOne的第二个调用现在使用第一个OwnsOne调用（一个ReferenceOwnershipBuilder）的返回类型调用Owns One。
+
+这样，Address就定义为拥有一个Location。对于第二个调用，使用OwnsOne的另一个重载，允许进行一些限制。显示此自定义后，指定City和Country属性的列名于默认名称不同。
+CompanyAddress定制的结果是，用于CompanyAddress和Location的列都包含在People表中，为City和Country属性提供定制列名。使用下一个OwnsOne调用的定制定义了PrivateAddress属性的所有权。这一次，Address类型映射到另一个表：
+映射到名为Addr的表。这个表包含了Location类中的列，且带有默认列名。
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+
+namespace OwnedEntities
+{
+    public class OwnedEntitiesContext : DbContext
+    {
+        private const string ConnectionString = @"server=(localdb)\MSSQLLocalDb;" +
+            "Database=OwnedEntities;Trusted_Connection=True";
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+           
+            optionsBuilder.UseSqlServer(ConnectionString);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Person>()
+                .OwnsOne(p => p.CompanyAddress)
+                .OwnsOne(a => a.Location, builder =>
+                {
+                    builder.Property(p => p.City).HasColumnName("BusinessCity");
+                    builder.Property(p => p.Country).HasColumnName("BusinessCountry");
+                });
+            modelBuilder.Entity<Person>().OwnsOne(p => p.PrivateAddress).ToTable("Addr").OwnsOne(a => a.Location);
+        }
+
+        public DbSet<Person> People { get; set; }
+    }
+}
+
+```
