@@ -539,46 +539,887 @@ digraph abc{
 在实际开发中，经常要用到的是对复杂数据结构的描述，graphviz提供完善的机制来绘制此类图形。
 
 一个hash表的数据结构
-
-```dot
+> 代码：
+\```dot
 struct st_st_hash_type{
     int (*compare) ();
     int (*hash) ();
 };
-
+//
 struct st_table_entry{
     unsigned int hash;
     char *key;
     char *record;
     st_table_entry *next;
-}
-
+};
+//
 struct st_table{
     struct st_hash_type *type;
     int num_bins;     //插入 count*
     int num_entries;    //统计实体
     struct st_table_entry **bins;
-}
-
-
+};
+//
+//
 digraph st2{
     fontname="Verdana";
     fontsize=10;
     rankdir=TB;
-
-    node [fontname="Verdana" ,fontsize=10,color="skyblue",shape="record"];
-
+//
+    node [fontname="Verdana",fontsize=10,color="skyblue",shape="record"];
+//
     edge [fontname="Verdana",fontsize=10,color="crimson",style="solid"];
-
+//
     st_has_type [label="{<head>st_hash_type|(*compare)|(*hash)}"];
-    
+//    
     st_table_entry [label="{<head>st_table_entry|hash|key|record|<next>next}"];
-
+//
     st_table [label="{st_table|<type>type|num_bins|num_entries|<bins>bins}"];
-
+//
     st_table:bins->st_table_entry:head;
     st_table:type->st_hash_type:head;
-
+//
     st_table_entry:next->st_table_entry:head [style="dashed",color="forestgreen"];
+}
+\```
+
+
+<hr><br>
+
+### 软件模块组成图
+Apache httpd模块关系
+IDPV2后台的模块组成关系
+在实际开发中，随着系统功能的完善，软件整体的结构会越来越复杂，通常开发人员会将软件划分为可理解的多个字模块，各个模块通过协作，完成各种各样的需求。
+
+IDP 支持曾为一个相对独立的子系统，齐总包括如数据库管理器，配置信息管理器等模块，另外为了提供更大的灵活性，将很多其他模块抽取出来作为外部模块，而支持层提供了一个模块管理器，来负责加载/卸载这些外部的模块集合。
+
+这些模块间的关系较为复杂，并且有部分模块关系密切，应归类为一个子系统。
+> 代码如下:
+\```dot
+digraph idp_modules{
+    rankdir=TB;
+    fontname="Microsoft YaHei";
+    fontsize=12;
+    //==节点==
+    node [fontname="Microsoft YaHei",fontsize=12,shape="record"];
+    edge [fontname="Microsoft YaHei",fontsize=12];
+    //
+    //==子模块==
+    subgraph cluster_sl{
+        label="IDP 支持层";
+        bgcolor="mintcream";
+        node [shape="Mrecord",color="skyblue",style="filled"];
+        network_mgr [label="网络管理器"];
+        log_mgr [label="日志管理器"];
+        module_mgr [label="模块管理器"];
+        conf_mgr [label="配置管理器"];
+        db_mgr [label="数据库管理器"];
+    };
+    //
+    //==字模块==
+    subgraph cluster_md{
+        label="可插拔模块集";
+        bgcolor="lightcyan";
+        node [color="chartreuse2",style="filled"];
+        mod_dev [label="开发支持模块"];
+        mod_dm [label="数据建模模块"];
+        mod_dp [label="部署发布模块"];
+    };
+    //
+    //==连接关系==
+    mod_dp->mod_dev [label="依赖..."];
+    mod_dp->mod_dm [label="依赖..."];
+    mod_dp->module_mgr [label="安装...",color="yellowgreen",arrowhead="none"];
+    mod_dev->mod_dm [label="依赖..."];
+    mod_dev->module_mgr [label="安装...",color="yellowgreen",arrowhead="none"];
+    mod_dm->module_mgr [label="安装...",color="yellowgreen",arrowhead="none"];
+}
+\```
+
+
+```dot
+digraph idp_modules{
+    rankdir=TB;
+    fontname="Microsoft YaHei";
+    fontsize=12;
+    //==节点==
+    node [fontname="Microsoft YaHei",fontsize=12,shape="record"];
+    edge [fontname="Microsoft YaHei",fontsize=12];
+    //
+    //==子模块==
+    subgraph cluster_sl{
+        label="IDP 支持层";
+        bgcolor="mintcream";
+        node [shape="Mrecord",color="skyblue",style="filled"];
+        network_mgr [label="网络管理器"];
+        log_mgr [label="日志管理器"];
+        module_mgr [label="模块管理器"];
+        conf_mgr [label="配置管理器"];
+        db_mgr [label="数据库管理器"];
+    };
+    //
+    //==字模块==
+    subgraph cluster_md{
+        label="可插拔模块集";
+        bgcolor="lightcyan";
+        node [color="chartreuse2",style="filled"];
+        mod_dev [label="开发支持模块"];
+        mod_dm [label="数据建模模块"];
+        mod_dp [label="部署发布模块"];
+    };
+    //==连接关系==
+    mod_dp->mod_dev [label="依赖..."];
+    mod_dp->mod_dm [label="依赖..."];
+    mod_dp->module_mgr [label="安装...",color="yellowgreen",arrowhead="none"];
+    mod_dev->mod_dm [label="依赖..."];
+    mod_dev->module_mgr [label="安装...",color="yellowgreen",arrowhead="none"];
+    mod_dm->module_mgr [label="安装...",color="yellowgreen",arrowhead="none"];
+}
+```
+
+
+<hr><br>
+
+### 状态图
+有限自动机示意图
+>代码：
+\```dot
+digraph automata_0{
+    size="100.15,400";
+    fontname="Microsoft YaHei";
+    fontsize=10;
+    //
+    //
+    node [shape=circle,fontname="Microsoft YaHei",fontsize=10];
+    edge [fontname="Microsoft YaHei",fontsize=10];
+    //
+    //
+    0 [style=filled,color=lightgrey];
+    2 [shape=doublecircle];
+    //
+    //
+    0->2 [label="  a"];
+    0->1 [label="   other"];
+    1->2 [label="   a"];
+    1->1 [label="    other"];
+    2->2 [label="   a"]
+    2->1 [label="    other"];
+    //
+    //
+    "Machine: a" [shape=plaintext];
+    //性状值为plaintext的表示不用绘制边框，仅仅展示纯文本内容，这个在绘图中，绘图指示性的文本时很有用。如本图的“ Machine：a ”
+}
+\```
+
+
+
+```dot
+digraph automata_0{
+    size="100.15,400";
+    fontname="Microsoft YaHei";
+    fontsize=10;
+    //
+    //
+    node [shape=circle,fontname="Microsoft YaHei",fontsize=10];
+    edge [fontname="Microsoft YaHei",fontsize=10];
+    //
+    //
+    0 [style=filled,color=lightgrey];
+    2 [shape=doublecircle];
+    //
+    //
+    0->2 [label="  a"];
+    0->1 [label="   other"];
+    1->2 [label="   a"];
+    1->1 [label="    other"];
+    2->2 [label="   a"]
+    2->1 [label="    other"];
+    //
+    //
+    "Machine: a" [shape=plaintext];
+    //性状值为plaintext的表示不用绘制边框，仅仅展示纯文本内容，这个在绘图中，绘图指示性的文本时很有用。如本图的“ Machine：a ”
+}
+```
+
+
+<hr><br>
+
+### OSGi中模块的声明周期图
+OSGi中，模块具有生命周期，从安装到卸载，可能的状态具有已安装、已就绪、正在启动、已启动、正在停止，已卸载等。
+> 代码:
+\```dot
+digraph module_lc{
+    rankdir=TB;
+    fontname="Microsoft YaHei";
+    fontsize=12;
+    //==总体定义==
+    node [fontname="Microsoft YaHei",fontsize=12,shape="Mrecord",color="skyblue",style="filled"];
+    edge [fontname="Microsoft YaHei",fontsize=12,color="darkgreen"];
+    //==节点定义==
+    installed [label="已安装状态"];
+    resolved [label="已就绪状态"];
+    uninstalled [label="已卸载状态"];
+    starting [label="正在启动"];
+    active [label="已激活（运行）状态"];
+    stopping [label="正在停止"];
+    start [label=" ",shape="circle",width=0.5,fixedsize=true,style="filled",color="balck"];
+    //==连接定义==
+    start->installed [label="安装"];
+    installed->uninstalled [label="卸载"];
+    installed->resolved [label="准备",width=1.5,color="red"];
+    installed->installed [label="更新"];
+    resolved->installed [label="更新"];
+    resolved->starting [label="启动"];
+    starting->active [label=" "];
+    active->stopping [label="停止"];
+    stopping->resolved [label=" "];
+}
+\```
+
+
+```dot
+digraph module_lc{
+    rankdir=TB;
+    fontname="Microsoft YaHei";
+    fontsize=12;
+    //==总体定义==
+    node [fontname="Microsoft YaHei",fontsize=12,shape="Mrecord",color="skyblue",style="filled"];
+    edge [fontname="Microsoft YaHei",fontsize=12,color="darkgreen"];
+    //==节点定义==
+    installed [label="已安装状态"];
+    resolved [label="已就绪状态"];
+    uninstalled [label="已卸载状态"];
+    starting [label="正在启动"];
+    active [label="已激活（运行）状态"];
+    stopping [label="正在停止"];
+    start [label=" ",shape="circle",width=0.5,fixedsize=true,style="filled",color="balck"];
+    //==连接定义==
+    start->installed [label="安装"];
+    installed->uninstalled [label="卸载"];
+    installed->resolved [label="准备",width=1.5,color="red"];
+    installed->installed [label="更新"];
+    resolved->installed [label="更新"];
+    resolved->starting [label="启动"];
+    starting->active [label=" "];
+    active->stopping [label="停止"];
+    stopping->resolved [label=" "];
+}
+```
+
+
+<hr><br>
+
+### 其他实例
+一个简单的抽象语法树（AST）
+表达式（3+4）*5在编译时期，会形成一颗语法树，一边在计算时，先计算3+4的值，最后与5相乘。
+> 代码：
+\```dot
+digraph ast{
+    fontname="Microsoft YaHei";
+    fontsize=15;
+    //
+    node [shape=circle,fontname="Microsoft YaHei",fontsize=15];
+    edge [fontname="Microsoft YaHei",fontsize=15];
+
+    //
+    mul [label="mul(*)"];
+    add [label="add(+)"];
+    //
+    add -> 3;
+    add -> 4;
+    mul -> add;
+    mul -> 5;
+}
+\```
+
+
+```dot
+digraph ast{
+    fontname="Microsoft YaHei";
+    fontsize=15;
+
+    node [shape=circle,fontname="Microsoft YaHei",fontsize=15];
+    edge [fontname="Microsoft YaHei",fontsize=15];
+    node [shape="plaintext"];
+
+    mul [label="mul(*)"];
+    add [label="add(+)"];
+
+    add -> 3;
+    add -> 4;
+    mul -> add;
+    mul -> 5;
+}
+```
+
+<hr><br>
+
+### graphviz 绘制UML类图
+这里对Context的定义，Context是用户自定义的节点（Context写成什么没关系，label不能写错）。使用了node属性，其中label属性是一个字符串，这里` | `表示换行， `\l(L)`也就是空行的意思，占用一个空行。注意，使用{}吧内容括起来。
+> 代码：
+\```dot
+digraph G{
+    node [shape=record]
+    {rank=LR;Context;Strategy}
+    //
+    Context[label="{Context| +strategy : Strategy\l|+contextInterface()\l}"]
+    //
+    docs [style="filled",color="gold",label="Strategy AlgorithmInterface()"]
+    Strategy [label="{Strategy|\l|+algorithmInterface()\l}"];
+    ca [label="{ConcreteStrategyA|\l+algorithmInterface()\l}"];
+    cb [label="{ConcreteStrategyB|\l+algorithmInterface()\l}"];
+    cc [label="{ConcreteStrategyC|\l+algorithmInterface()\l}"];
+    //
+    Strategy -> Context
+    Context->docs
+    {rank=same;ca;cb;cc;docs}
+    ca -> Strategy
+    cb -> Strategy
+    cc -> Strategy
+}
+\```
+
+
+```dot
+digraph G{
+    node [shape=record]
+    {rank=LR;Context;Strategy}
+   
+    Context[label="{Context| +strategy : Strategy\l|+contextInterface()\l}"]
+
+    docs [style="filled",color="gold",label="Strategy AlgorithmInterface()"]
+    Strategy [label="{Strategy|\l|+algorithmInterface()\l}"];
+    ca [label="{ConcreteStrategyA|\l+algorithmInterface()\l}"];
+    cb [label="{ConcreteStrategyB|\l+algorithmInterface()\l}"];
+    cc [label="{ConcreteStrategyC|\l+algorithmInterface()\l}"];
+    
+    Strategy -> Context
+    Context->docs
+    {rank=same;ca;cb;cc;docs}
+    ca -> Strategy
+    cb -> Strategy
+    cc -> Strategy
+}
+```
+
+
+<hr><br>
+
+### 类图
+UML类图是最常见的图形，用于表示系统的静态结构，UML中类是以矩形表示。我们可以在dot文件中预设节点的形状，并且设置一些如字体等属性。
+> 代码：
+\```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5]
+    /* */
+    Foo
+    Bar
+}
+\```
+
+```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5]
+    /* */
+    Foo
+    Bar
+}
+```
+
+
+#### 继承
+继承是类之间很重要的关系，在UML中又称其为泛华关系，以空心箭头表示派生类指向基类。在DOT中，可以设置边的箭头形状，
+> 代码：
+\```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5]
+    /* 类 */
+    Animal,Mammal,Reptile,Dog,Cat,Snake
+    {
+        /* dir=back 为逆向箭头*/
+        edge [arrowtail=onormal,dir=back]
+        Animal -> {Mammal,Reptile}
+        Mammal -> {Dog,Cat}
+        Reptile -> Snake
+    }
+}
+\```
+
+```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5]
+    /* 类 */
+    Animal,Mammal,Reptile,Dog,Cat,Snake
+    {
+        /* dir=back 为逆向箭头*/
+        edge [arrowtail=onormal,dir=back]
+        Animal -> {Mammal,Reptile}
+        Mammal -> {Dog,Cat}
+        Reptile -> Snake
+    }
+}
+```
+
+#### 关联
+UML中关联描述两个类的关系，以类之间的实线表示。例如人和杂志的关系时订阅:
+> 代码：
+\```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5];
+    /*定义关系*/
+    Person,Magazine
+    {
+        /* subscribe——订阅*/
+        edge [dir=none]
+        Person -> Magazine [label="subscribe(订阅)"]
+    }
+}
+\```
+
+
+```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5];
+
+    Person,Magazine
+    {
+        /* subscribe——订阅*/
+        edge [dir=none]
+        Person -> Magazine [label="subscribe(订阅)"]
+    }
+}
+```
+
+
+#### 多重关系
+我们经常会表示关联之间的多重性，例如`Person`类的实例最多可订阅5本杂志，而每本杂志可以被任意数目的人订阅：
+> 代码：
+\```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5];
+    edge [fontname="Inconsolata,Consolas",fontsize=10,penwidth=0.5];
+    /**/
+    Person,Magazine
+    /*Association with multiplicity*/
+    {
+        /* subscribe——订阅*/
+        edge [dir=none]
+        Person -> Magazine [label="   subscribe(订阅)",headlabel="0..10  ",taillabel="* "]
+       /*注意上面例子 label、headlabel、taillabel加入空格避免他们贴的太近.*/
+    }
+}
+\```
+
+
+```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5];
+    edge [fontname="Inconsolata,Consolas",fontsize=10,penwidth=0.5];
+
+    Person,Magazine
+
+    /*Association with multiplicity*/
+    {
+        /* subscribe——订阅*/
+        edge [dir=none]
+        Person -> Magazine [label="   subscribe(订阅)",headlabel="0..10  ",taillabel="* "]
+       /*注意上面例子 label、headlabel、taillabel加入空格避免他们贴的太近.*/
+    }
+}
+```
+关联可以是单向或双向的，以线性箭头表示，无箭头表示双向关联。
+> Interviewer -> Candidate [arrowhead=vee]
+
+
+#### 聚合
+聚合是一种特殊的关系，是一种弱的包含关系，包含方以空心菱形表示，例如一个部门包含一些员工：
+> 代码：
+\```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5];
+    edge [fontname="Inconsolata,Consolas",fontsize=10,penwidth=0.5];
+    /**/
+    Department,Employee
+    /**/
+    /*Association with multiplicity*/
+    {
+        /* subscribe——订阅*/
+        edge [dir=back,arrowtail=odiamond,headlabel="* "]
+        Department -> Employee
+    /**/
+    }
+}
+\```
+
+```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5];
+    edge [fontname="Inconsolata,Consolas",fontsize=10,penwidth=0.5];
+
+    Department,Employee
+
+    /*Association with multiplicity*/
+    {
+        /* subscribe——订阅*/
+        edge [dir=back,arrowtail=odiamond,headlabel="* "]
+        Department -> Employee
+
+    }
+}
+```
+
+#### 组成
+组成是更强的包含关系，说明一个类的实例时另一个类的组成部分，他们有一致的生命周期，组成方以实心菱形表示。例如一家公司由多个部门组成，如果公司结业，部门就不存在了。
+> 代码：
+\```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5];
+    edge [fontname="Inconsolata,Consolas",fontsize=10,penwidth=0.5];
+    /*以下公司、部门、员工*/
+    Company,Department,Employee
+    /**/
+    /*公司和部门的关系*/
+    {
+        /* subscribe——订阅*/
+        edge [dir=back,arrowtail=diamond,headlabel="* "]
+        Company -> Department
+    }
+    /**/
+    /*部门和员工的关系*/
+    {
+        /* subscribe——订阅*/
+        edge [dir=back,arrowtail=odiamond,headlabel="* "]
+        Department -> Employee
+    }
+}
+\```
+
+
+```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5];
+    edge [fontname="Inconsolata,Consolas",fontsize=10,penwidth=0.5];
+    /*以下公司、部门、员工*/
+    Company,Department,Employee
+    /**/
+    /*公司和部门的关系*/
+    {
+        /* subscribe——订阅*/
+        edge [dir=back,arrowtail=diamond,headlabel="* "]
+        Company -> Department
+    }
+    /**/
+    /*部门和员工的关系*/
+    {
+        /* subscribe——订阅*/
+        edge [dir=back,arrowtail=odiamond,headlabel="* "]
+        Department -> Employee
+    }
+}
+```
+
+
+#### 依赖
+依赖（depedency）说明一个类会使用到另一个类，例如表示以一个类作为成员方法的参数或返回值。UML中采用线性箭头和虚线表示。
+以下是表示工厂创建产品，常用于各种工厂模式，工厂不拥有产品。
+> 代码：
+\```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5];
+    edge [fontname="Inconsolata,Consolas",fontsize=10,penwidth=0.5];
+    /*工厂和产品*/
+    Factory,Product
+    /**/
+    /*生产关系*/
+    {
+        edge [arrowtail=vee,style="dashed"]
+        Factory -> Product [label="   <<create>>"]
+    }
+}
+\```
+
+
+```dot
+digraph{
+    node [shape=box,fontname="Inconsolata,Consolas",fontsize=15,penwidth=0.5];
+    edge [fontname="Inconsolata,Consolas",fontsize=10,penwidth=0.5];
+    /*工厂和产品*/
+    Factory,Product
+    /**/
+    /*生产关系*/
+    {
+        edge [arrowtail=vee,style="dashed"]
+        Factory -> Product [label="   <<create>>"]
+    }
+}
+```
+
+
+### 类成员
+类除了名字，可以展示其成员。成员包括属性（attribute）和方法（method）。
+每个成员的可见性（visibility）以一个前置符号表示：
+1. `+ ` 公有（public）
+2. ` -` 私有（private）
+3. `# ` 保护（protected）
+4. ` ~` 包（package）
+
+如果成员为静态`static`的，则是下划线
+
+属性的格式：
+`<visibility> <attribute name>:<type>`
+
+方法格式：
+`<visibility> <method name> (<param1 name>:<param1 type>,...): <return type>`
+
+Graphviz可以使用record shape或HTML Table来分隔名字，属性和方法。
+> 代码：
+\```dot
+digraph{
+    node [shape=record,fontname="Inconsolata,Consolas",fontsize=10,penwidth=0.5,width="2.5"];
+    /**/
+    Account [label="{
+        Account
+        |
+        # balance : int\l
+        - owner : string\l
+        |
+        + Deposite(amount : int)\l
+        + Withdraw(amount : int)\l
+        + GetBalance() : int\l
+    }"]
+}
+\```
+其中 `\l(L)`表示该行向左对齐并换行。
+
+```dot
+digraph{
+    node [shape=record,fontname="Inconsolata,Consolas",fontsize=10,penwidth=0.5,width="2.5"];
+
+    Account [label="{
+        Account
+        |
+        # balance : int\l
+        - owner : string\l
+        |
+        + Deposite(amount : int)\l
+        + Withdraw(amount : int)\l
+        + GetBalance() : int\l
+    }"]
+}
+```
+
+
+#### 包
+在比较大的系统里，类通常会用包（package）的方式来组织。Graphviz不能简单还完UML包的图形，但可以使用subgraph cluster功能去近似的表示类属于那个包。
+> 代码：
+\```dot
+digraph{
+    graph [fontname="Microsoft YaHei",fontsize=10,penwidth=0.5,labeljust=left]
+    node [shape=box,fontname="Microsoft YaHei",fontsize=10,penwidth=0.5]
+    edge [fontname="Microsoft YaHei",fontsize=10,penwidth=0.5]
+    /*子图*/
+    subgraph clusterView {
+        label="View"
+        AccountView,CustomerView
+    }
+    /*子图*/
+    subgraph clusterModel {
+        label="Model"
+        Account,Customer
+    }
+    /*关系*/
+    {
+        edge [arrowhead=vee]
+        AccountView -> Account
+        CustomerView -> Customer
+    }
+    /*注意`subgraph` 的名字必须以cluster为前缀*/
+}
+\```
+
+
+```dot
+digraph{
+    graph [fontname="Microsoft YaHei",fontsize=10,penwidth=0.5,labeljust=left]
+    node [shape=box,fontname="Microsoft YaHei",fontsize=10,penwidth=0.5]
+    edge [fontname="Microsoft YaHei",fontsize=10,penwidth=0.5]
+
+    subgraph clusterView {
+        label="View"
+        AccountView,CustomerView
+    }
+
+    subgraph clusterModel {
+        label="Model"
+        Account,Customer
+    }
+
+    /*关系*/
+    {
+        edge [arrowhead=vee]
+        AccountView -> Account
+        CustomerView -> Customer
+    }
+    /*注意`subgraph` 的名字必须以cluster为前缀*/
+}
+```
+
+
+#### 排布技巧
+例如，dot描述的是有向图，从来源节点指向目标节点时，目标节点就会成为下一级，预设设置下，节点会垂直排列。
+> 代码：
+\```dot
+digraph{
+    node [shape=box,fontname="Microsoft YaHei",fontsize=10,penwidth=0.5]
+    /**/
+    Canvas,Shape,Rectangle,Circle
+    /* Inheritance */
+    {
+        edge [arrowtail=onormal,dir=back]
+        Shape -> {Rectangle,Circle}
+    }
+    /*Composition*/
+    {
+        edge [dir=back,arrowtail=diamond,headlabel="* "]
+        Canvas -> Shape
+    }
+}
+\```
+
+```dot
+digraph{
+    node [shape=box,fontname="Microsoft YaHei",fontsize=10,penwidth=0.5]
+
+    Canvas,Shape,Rectangle,Circle
+    /* Inheritance */
+    {
+        edge [arrowtail=onormal,dir=back]
+        Shape -> {Rectangle,Circle}
+    }
+    /*Composition*/
+    {
+        edge [dir=back,arrowtail=diamond,headlabel="* "]
+        Canvas -> Shape
+    }
+}
+```
+
+但有时候我们做一些修改，例如继承沿用这种方式，但关联时以水平。我们可以使用rank=same去设置一组节点为同一级，节点之间的距离可整体设置 `nodesep`属性：
+> 代码：
+\```dot
+digraph{
+    graph [nodesep=1]   //节点之间的距离
+    node [shape=box,fontname="Microsoft YaHei",fontsize=10,penwidth=0.5]
+    /*Canvas和Shape同一级*/
+    {
+        rank=same
+        Canvas,Shape
+    }
+    /*Rectangle和Circle同一级*/
+    {
+        rank=same
+        Rectangle,Circle
+    }
+    /* Inheritance */
+    {
+        edge [arrowtail=onormal,dir=back]
+        Shape -> {Rectangle,Circle}
+    }
+    /*Composition*/
+    {
+        edge [dir=back,arrowtail=diamond,headlabel="* "]
+        Canvas -> Shape
+    }
+}
+\```
+
+
+```dot
+digraph{
+    graph [nodesep=1]   //节点之间的距离
+    node [shape=box,fontname="Microsoft YaHei",fontsize=10,penwidth=0.5]
+    /*Canvas和Shape同一级*/
+    {
+        rank=same
+        Canvas,Shape
+    }
+    /*Rectangle和Circle同一级*/
+    {
+        rank=same
+        Rectangle,Circle
+    }
+    /* Inheritance */
+    {
+        edge [arrowtail=onormal,dir=back]
+        Shape -> {Rectangle,Circle}
+    }
+    /*Composition*/
+    {
+        edge [dir=back,arrowtail=diamond,headlabel="* "]
+        Canvas -> Shape
+    }
+}
+```
+
+
+#### 颜色
+UML图也不一定是黑白的。做软件设计时可以加入颜色。可以使用Graphviz的配色方案，例如 `colorscheme=spectral7` 设置7个光谱色配色方案，然后使用`fillcolor=1 至7 填充`节点形状。
+> 代码：
+\```dot
+digraph{
+    graph [fontname="Microsoft YaHei",fontsize=10,penwidth=0.5,labeljust=left]   //节点之间的距离
+    node [shape=box,fontname="Microsoft YaHei",fontsize=10,penwidth=0.5,style=filled,colorscheme=spectral7]
+    edge [fontname="Microsoft YaHei",fontsize=10,penwidth=0.5];
+    /**/
+    /*以下是子图*/
+    subgraph clusterView{
+        label="View"
+        node [fillcolor=4]
+        AccountView,CustomerView
+    }
+    /**/
+    /*子图*/
+    subgraph clusterModel{
+        label="Model"
+        node [fillcolor=6]
+        Account,Customer
+    }
+    /**/
+    /*连接关系*/
+    {
+        edge [arrowhead=vee]
+        AccountView -> Account
+        CustomerView -> Customer
+    }
+}
+\```
+
+
+```dot
+digraph{
+    graph [fontname="Microsoft YaHei",fontsize=10,penwidth=0.5,labeljust=left]   //节点之间的距离
+    node [shape=box,fontname="Microsoft YaHei",fontsize=10,penwidth=0.5,style=filled,colorscheme=spectral7]
+    edge [fontname="Microsoft YaHei",fontsize=10,penwidth=0.5];
+    /**/
+    /*以下是子图*/
+    subgraph clusterView{
+        label="View"
+        node [fillcolor=4]
+        AccountView,CustomerView
+    }
+    /**/
+    /*子图*/
+    subgraph clusterModel{
+        label="Model"
+        node [fillcolor=6]
+        Account,Customer
+    }
+    /**/
+    /*连接关系*/
+    {
+        edge [arrowhead=vee]
+        AccountView -> Account
+        CustomerView -> Customer
+    }
 }
 ```
