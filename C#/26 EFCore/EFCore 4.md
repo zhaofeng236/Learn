@@ -100,7 +100,7 @@ MenuCard包含Menu对象。其中，实例化MenuCard和Menu对象，在制定�
 
 
     //==program文件==
-            private static void AddRecords()
+        private static void AddRecords()
         {
             Console.WriteLine(nameof(AddRecords));
             try
@@ -254,3 +254,99 @@ protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 > ==**注意：上下文只用于读取记录时，可以使用NotTracking配置，但无法修改。这减少了上下文的开销，因为不保存状态信息**==
 
 ### 更新对象
+跟踪对象时，对象可以轻松地更新，首先，检索Menu对象。使用这个被跟踪的对象，修改价格，在把变更写入数据库。在所有的变更之间，将状态信息写入控制台。
+
+```csharp
+private static void UpdateRecords()
+{
+   Console.WriteLine(nameof(UpdateRecords));
+   using(var context=new MenusContext())
+   {
+      Menu menu = context.Menus
+        .Skip(1)
+        .FirstOrDefault();
+      ShowState(context);
+      menu.Price += 20m;
+      ShowState(context);
+      int records = context.SaveChanges();
+      Console.WriteLine($"{records} 条记录被更新！");
+      ShowState(context);
+   }
+    Console.WriteLine();
+}
+
+out:
+UpdateRecords
+类型：Menu,状态:Unchanged,白族生肉
+类型：Menu,状态:Modified,白族生肉
+1 条记录被更新！
+类型：Menu,状态:Unchanged,白族生肉
+```
+运行应用程序时，可以看到，加载记录后，对象的状态时Unchanged；
+修改价格（属性）后，对象的状态是Modified；
+保存完成后，对象的状态是Unchanged；
+
+访问更改跟踪其中的条目时，默认情况下会自动检测到变更。要配置ChangeTracker的AutoDetectChangesEnabled属性。为了手动检查更改是否已经完成，调用DetectChanges方法。调用SaveChnagesAsync后，状态改回Unchanged。调用AcceptAllChnages方法可以手动完成这个操作。
+
+
+### 更新为跟踪的对象
+DB上下文通常非常短寿。使用EF Core与ASP.NET Core MVC，通过一个HTTP请求创建一个对象上下文，来检索对象。从客户端接收一个跟新时，对象必须在服务器上创建。这个对象与对象的上下文相关联。
+为了在数据库中跟新它，对象需要与DB上下文相关联，修改状态，创建INSERT、UPDATE、DELETE语句。
+
+这样的情景用下一个片段模拟。本地函数GetMenu返回一个脱离上下文的Menu对象；上下文在该本地函数的最后销毁。GetMenu方法由ChangeUntracked方法调用。这个方法修改不予任何上下文相关的Menu对象。改变后，Menu对象传递到方法UpdateUntracked，保存到数据库中。
+
+```csharp
+        private static void ChangeUntracked()
+        {
+            Console.WriteLine(nameof(ChangeUntracked));
+            Menu GetMenu()
+            {
+                using(var context=new MenusContext())
+                {
+                    Menu menu = context.Menus
+                        .Skip(0)
+                        .FirstOrDefault();
+                    return menu;
+                }
+            }
+
+            Menu m = GetMenu();
+            m.Price += 50m;
+            UpdateUntracked(m);
+        }
+
+//UpdateUntracked方法接受已更新的对象，需要把它与上下文关联起来。对象与上下文关联起来的一个方法就时调用DbSet的Attach方法，并根据需要设置状态。Update方法用一个调用完成了这两个操作：关联对象，把状态设置为Modified。
+
+
+        private static void UpdateUntracked(Menu m)
+        {
+            using(var context=new MenusContext())
+            {
+                ShowState(context);
+                // EntityEntry<Menu> entry=context.Menus.Attach(m);
+                // entry.State=EntityState.Modified;
+
+                context.Menus.Update(m);
+
+                ShowState(context);
+                context.SaveChanges();
+            }
+        }
+```
+通过ChnageUntracked方法运行应用程序时，可以看到状态的修改。对象起初没有被跟踪，但时，因为显示地跟新了状态，所以可以看到Modified状态。
+
+
+
+### 批处理
+对象映射工具不支持所有场景。例如，如果城市的邮政编码更改为新代码，并且希望把所有客户的旧邮政编码更新为新代码，最好调用一个SQL UPDATE语句来更新所有记录。使用EF Core，为每个客户生成跟新语句。
+
+但是，EF Core对于通过一个SaveChnages调用发送一系列单独的SQL语句并没有那么糟糕。EF Core支持批处理。SaveChanges想SQL Server发送一个命令，其中仅用一条语句执行多个插入或更新操作。可以控制批处理的大小——例如，当配置SQL Server时，通过调用值为1的MaxBatchSize（）来禁用批处理。
+```csharp
+protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+{
+    base.OnConfigruing(optionsBuilder);
+    OptionsBuilder.UseSqlServer(ConnectionString,options=>options.MaxBatchSize(1));
+}
+```
+
+下面代码创建100个菜单，添加到上下文中，用SaveChanges方法将其写入数据库中。
