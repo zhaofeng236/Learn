@@ -574,3 +574,75 @@ var data2=(from p in dbContext.T_UserInfor
 ```
 
 还有EF.Functions.DateDiffDay(DateDiffHour、DateDiffMonth)，求天、小时、月之间的数量。
+
+<hr>
+<br>
+
+## 使用事务
+每次使用Entity Framework访问数据库时，都涉及事务。可以隐式的使用事务或根据需要使用配置显示的创建他们。本章使用的示例项目以两种方式展示事务。这里，Menu、MenuCard和MenuContext类的用法与前面的MenusSample项目相同。
+
+### 使用隐式的事务。
+SaveChanges方法的调用会自动解析为一个事务。如果需要进行的一部分变更失败，例如，因为数据库约束，就回滚所有已经完成的更改。
+
+下面的代码演示了这一点。其中，第一个Menu（m1）用有效的数据创建。对现有MenuCard的引用时通过提供MenuCardId完成的。更新完成后，Menu m1的MenuCard属性自动填充。然而，所创建的第二个菜单mInvalid,因为提供的MenuCardId高于数据库中可用的最高ID，所以引用了无效的菜单看。因为MenuCard和Menu之间定义了外键关系，所以添加这个对象会失败。（TransactionsSample/Program.cs）
+
+```csharp
+        private static void AddTwoRecordsWithOneTx()
+        {
+            Console.WriteLine(nameof(AddTwoRecordsWithOneTx));
+            try
+            {
+                using(var context=new MenusContext())
+                {
+                    var card = context.MenuCards.First();
+
+                    var m1 = new Menu
+                    {
+                        MenuCardId = card.MenuCardId,
+                        Text = "added",
+                        Price = 99.99m
+                    };
+
+                    int hightestCardId = context.MenuCards.Max(c => c.MenuCardId);
+                    Console.WriteLine($"最大的Id为：{ hightestCardId}");
+
+                    var mInvalid = new Menu
+                    {
+                        MenuCardId = ++hightestCardId,
+                        Text = "invalid", Price = 999.99m
+                    };
+
+                    Console.WriteLine($"m1的MenuCardId={m1.MenuCardId}");
+                    Console.WriteLine($"mInvalid的MenuCardId={mInvalid.MenuCardId}");
+
+                    context.Menus.AddRange(m1, mInvalid);
+
+                    Console.WriteLine("trying to add one invalid record to the database, this should fail...");
+                    int records = context.SaveChanges();
+                    Console.WriteLine($"{records} 条记录被增加！");
+                }
+            }
+            catch(DbUpdateException ex)
+            {
+                Console.WriteLine($"{ex.Message}");
+                Console.WriteLine($"{ex?.InnerException.Message}");
+            }
+            Console.WriteLine();
+        }
+```
+
+在调用AddTwoRecordsWithOneTx方法运行应用程序之后，可以验证数据库的内容，确定没有添加一个记录。异常消息以及内部异常的消息给出了细节。
+
+如果第一条记录写入数据库应该是成功的，即时第二条记录写入失败，也需要多次调用SaveChanges方法。一个SaveChanges就是一个完整隐式事务。
+```csharp
+//第一次调用SaveChanges插入m1，成功。
+context.Menus.Add(m1);
+int records=context.SaveChanges()
+
+
+context.Menus.Add(mInvalid);
+int records=context.SaveChanges()
+//第二次调用SaveChanges插入mInvalid,第二个语句的结果是DbUpdateException。可以验证数据库，这次添加一条记录。
+```
+
+### 创建显示的事务
