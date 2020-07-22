@@ -56,8 +56,82 @@ public class BloggingContext:DbContext
 }
 ```
 
+## 数据库连接字符串的写法
+1. 账号密码：
+```csharp
+Server=localhost;Database=DbName;User ID=sa;Password=123456;
+```
+2. windows身份:
+```csharp
+Server=localhost;Database=DbName;Trusted_Connection=True;
+```
+
+### 手动设置连接池的最大、最小数量：
+> Server=localhost;Database=Test;Trusted_Connection=True;Max PoolSize=100;Min PoolSize=5
+
+
+## 命令查实和默认关闭状态追踪
+1. 命令超时：表示60秒超时。
+> providerOptions=>providerOptions.CommandTimeout(60)
+
+2. 关闭查询状态追踪:默认开启追踪
+> UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking) 表示关闭
+
 EF Core还可以从现有数据库对模型进行反向工程
 未清除起见，有意简化了此应用程序。连接字符串不应该存储在生产应用程序代码中。可能还需要将每个C#类车分为其自己的文件。
+
+
+- QueryTrackingBehavior.NoTracking: 对应的是Detached状态，即游离状态。
+- QueryTrackingBehavior.TrackAll: 对应的是Unchanged状态，即未发生改变的。
+
+```csharp
+
+public void ConfigureServices(IServiceCollection services)
+{
+    services.Configure<CookiePolicyOptions>(options=>
+    {
+        options.CheckConsentNeeded=context=>true;
+        options.MinimumSameSitePolicy=SameSiteMode.None;
+    });
+
+    //注册EF上下文
+    services.AddDbContext<EFDB01Context>(option=>option.UseSqlServer(Configuration.GetConnectionString("EFStr"),
+      providerOptions=>providerOptions.CommandTimeout(60)).UseQueryTrackingBehavior(QueryTrackingBehavior.TrackAll));
+    
+    services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+}
+
+//示例应用
+{
+    var d1=context1.T_UserInfor.First();
+    //关闭跟踪对应的是: Detached；
+    //开启跟踪对应的是: Unchanged；
+    var state=context1.Entry(d1).State;
+}
+```
+
+## 日志记录
+最好在控制台中配置，能输出生成的SQL语句。
+配置代码：
+```csharp
+public partial class EFDB01Context:DbContext
+{
+    public static readonly LoggerFactory MyLoggerFactory=new LoggerFactory(
+        new[] 
+        {
+            new ConsoleLoggerProvider((category,level)=>category==DbLoggerCategory.Database.Command.Name && level == 
+            LogLevel.Information,true)
+        }
+    );
+
+}
+
+```
+
+
+
+
+
 
 ## 创建数据库
 > .NET Core CLI
