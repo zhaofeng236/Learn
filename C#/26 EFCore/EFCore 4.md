@@ -171,6 +171,83 @@ MenuCard包含Menu对象。其中，实例化MenuCard和Menu对象，在制定�
 
 给上下文添加4个对象后调用的方法ShowState显示了所有与上下文相关的对象的状态。
 
+
+
+
+```csharp
+MenusContext另一种配置
+    public class MenusContext : DbContext
+    {
+        private const string ConnectionString =
+          @"server=localhost;" +
+          @"database=MenuStore;" +
+          @"trusted_connection=true;";
+
+        public DbSet<Menu> Menus { get; set; }
+        public DbSet<MenuCard> MenuCards { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
+            optionsBuilder.UseSqlServer(ConnectionString);
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.HasDefaultSchema("mc");
+            //使用配置文件来配置
+            //modelBuilder.ApplyConfiguration(new MenuCardConfiguration());
+            // modelBuilder.ApplyConfiguration(new MenuConfiguration());
+
+            modelBuilder.Entity<MenuCard>()
+                .ToTable("MenuCards")
+                .HasKey(c => c.MenuCardId);
+
+            modelBuilder.Entity<MenuCard>()
+                .Property<int>(c => c.MenuCardId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<MenuCard>()
+                .Property<string>(c => c.Title)
+                .HasMaxLength(50);
+
+            //menu的配置
+            modelBuilder.Entity<Menu>()
+                .ToTable("Menus")
+                .HasKey(m => m.MenuId);
+
+            modelBuilder.Entity<Menu>()
+                .Property<int>(m => m.MenuId)
+                .ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<Menu>()
+                .Property<string>(m => m.Text)
+                .HasMaxLength(120);
+
+            modelBuilder.Entity<Menu>()
+                .Property<decimal>(m => m.Price)
+                .HasColumnType("money");
+
+            //关联关系，一个菜单包含很多菜品
+            modelBuilder.Entity<MenuCard>()
+                .HasMany(c => c.Menus)
+                .WithOne(m => m.MenuCard);
+
+            modelBuilder.Entity<Menu>()
+                .HasOne(m => m.MenuCard)
+                .WithMany(c => c.Menus)
+                .HasForeignKey(m => m.MenuCardId);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess,
+            CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+    }
+
+```
 DbContext类有一个相关的ChangeTracker，使用ChangeTracker属性可以访问它。ChangeTracker的Entries方法返回变更跟踪器了解的所有对象。在foreach循环中，每个对象包括其状态都写入控制台。
 因为这个状态，SaveChanges方法创建SQL Insert语句，把每个对象都写到数据库中。
 
@@ -645,4 +722,79 @@ int records=context.SaveChanges()
 //第二次调用SaveChanges插入mInvalid,第二个语句的结果是DbUpdateException。可以验证数据库，这次添加一条记录。
 ```
 
+<hr>
+<br>
+
 ### 创建显示的事务
+显示创建事务的优势是如果一些业务逻辑失败，也可以选择回滚，还可以在一个事务中结合多个SaveChanges调用。为了开始一个与DbContext派生类相关的事务，需要调用DatabaseFacade类中从Database属性返回的BeginTransaction方法。返回的事务实现了IDbContextTransaction接口。与DbContext相关的SQL语句通过事务建立起来。为了提交或回滚，必须显示调用Commit或Rollback方法。在示例代码中，当达到DbContext作用域的末尾时，Commit完成，在发生异常的情况下回滚。
+（TransactionsSample/Program.cs）
+
+```csharp
+        //显示使用事务
+        private static void TwoSaveChangesWithOneTx()
+        {
+            Console.WriteLine(nameof(TwoSaveChangesWithOneTx));
+            IDbContextTransaction tx = null;
+            try
+            {
+                using(var context=new MenusContext())
+                using (tx = context.Database.BeginTransaction())
+                {
+                    Console.WriteLine("使用一个显示事务，写入应该回滚...");
+                    var card = context.MenuCards.First();
+                    var m1 = new Menu
+                    {
+                        MenuCardId = card.MenuCardId,
+                        Text = "added with explicit tx",
+                        Price = 99.99m
+                    };
+
+                    context.Menus.Add(m1);
+                    int records = context.SaveChanges();
+                    Console.WriteLine($"{records} 条记录被增加。");
+
+
+                    int hightestCardsId = context.MenuCards.Max(c => c.MenuCardId);
+                    var mInvalid = new Menu
+                    {
+                        MenuCardId = ++hightestCardsId,
+                        Text = "invalid",
+                        Price = 999.99m
+                    };
+
+                    context.Menus.Add(mInvalid);
+                    records = context.SaveChanges();
+                    Console.WriteLine($"{records} 条记录被增加。");
+
+                    tx.Commit();
+
+                }
+            }
+            catch(DbUpdateException ex)
+            {
+                Console.WriteLine($"{ex.Message}");
+                Console.WriteLine($"{ex?.InnerException.Message}");
+                Console.WriteLine("Rolling back...");
+                tx.Rollback();
+            }
+
+        }
+```
+
+当运行应用程序时可以看到，没有添加记录，但多次调用了SaveChanges方法。SaveChanges的第一次返回列出了要添加的一条记录，但基于后面的Rollback，删除了这个记录。根据隔离级别的设置，回滚完成之前，更新的记录只能在事务内部可见，但在事务外部不可见。
+
+
+==注意：使用BeginTransaction方法，也可以给隔离界别提供一个值，指定数据库中所需要的隔离要求和锁。隔离级别参见25章==
+
+
+<hr>
+<br>
+
+### 迁移
+可以在现有的数据库中使用EF Core（称为：“数据库优先”），许多使用EF Core的场景中，数据库已经存在。数据库的更新独立于应用程序，并且在数据库更改完成后更新应用程序。这种情况下，EF Core迁移没有多大的帮助。
+
+如果使用应用程序创建数据库，EF Core迁移将非常有用。更改代码模型时，可以自动更新数据库。如果用户有自己的数据库，并且使用应用程序的跟新版本更改数据库模式，那么使用就的应用程序版本更新客户可能是一个调整。
+
+EF Core迁移可以解决这个问题：通过迁移，可以轻松的送版本X升级到版本Y。数据库的当前版本是从数据库中读取的，而迁移则包含了升级到最新版本的每一步所需要的信息。还可以升级或降级到指定版本。
+
+==自行了解==
