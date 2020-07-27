@@ -111,7 +111,9 @@ XAML是一个XML语法，但它定义了XML的几个增强特性。XAML仍然是
 
 在有效使用XAML之前，需要了解这门语言的一些重要特性。本章介绍了如下XAML特性：
 - 依赖属性：从外部看起来，依赖属性像正常属性。然而，他们需要更少的存储空间，实现了变更通知。
-- 路由事件：从外部看起来，路由事件像正常的.NET事件。然而，通过添加和删除访问器来使用自定义事件的实现方式，就允许冒泡和隧道。事件从外部控件进入内部控件成为隧道，从内部控件进入外部控件成为冒泡。
+- 路由事件：从外部看起来，路由事件像正常的.NET事件。然而，通过添加和删除访问器来使用自定义事件的实现方式，就允许冒泡和隧道。
+   - 事件从外部控件进入内部控件成为隧道;
+   - 事件从内部控件进入外部控件成为冒泡。
 - 附加属性：通过附加属性，可以给其他控件添加属性。例如，按钮控件没有属性用于把他自己定位在Grid控件的特定行和列上。在XAML中，看起来有这样一个属性。
 - 标记扩展：编写XML特性需要的编码比编写XML元素少。然而，XML特性只能是字符串；使用XML元素可以编写更强大的语法。为了减少需要编写的代码量，标记扩展允许在特性中编写强大的语法。
 
@@ -251,4 +253,222 @@ public int Value
 依赖属性不是这样的。依赖属性通常也有get和set访问器。他们于普通属性是相同的。但在Get和Set访问器的实现代码中，调用了GetValue和SetValue方法。
 GetValue和GetValue方法是基类DependencyObject的成员，依赖对象需要使用这个类——他们必须在DependencyObject的派生类中实现。
 
-有了依赖属性，数据成员就放在由基类
+有了依赖属性，数据成员就放在由基类管理的内部集合中，仅在值发生变化时分配数据。对于没有变化的值，数据可以在不同的实例或基类之间共享。
+
+GetValue和SetValue方法需要一个DependencyProperty参数。这个参数由类的一个静态成员定义，改静态成员与属性同名，并在该属性名的后面追加Property术语。对于Value属性，静态成员的名称是ValueProperty。DependencyProperty.Register是一个辅助方法，可以在依赖属性系统中注册属性。
+
+下面的代码使用Register方法和4个参数定义了属性名、属性的类型和拥有者的类型（即MyDependencyObject类），使用PropertyMetadata指定了默认值。
+
+```csharp
+public class MyDependencyObject:DependencyObject
+{
+    public int Value
+    {
+        get=>(int)GetValue(ValueProperty);
+        set=>SetValue(ValueProperty,value);
+    }
+
+    public static readonly DependencyProperty ValueProperty=
+      DependencyProperty.Register("Value",typeof(int),
+      typeof(MyDependencyObject),new PropertyMetadata(0));
+}
+```
+
+
+### 创建依赖属性
+示例定义三个依赖属性。MyDependencyObject类定义了依赖属性Value、Minimum和Maximum。所有这些属性都是用DependencyProperty.Register方法注册的依赖属性。GetValue和SetValue方法是基类DependencyObject的成员。对于Minimum和Maximum属性，定义了默认值，用DependencyProperty.Register方法设置该默认值时，可以把第4个参数设置为PropertyMetadata。使用带一个参数PropertyMetadata的构造函数，把Minimum属性设置为0，把Maximum属性设置为100。
+```csharp
+    public class MyDependencyObject:DependencyObject
+    {
+        public int Value
+        {
+            get => (int)GetValue(ValueProperty);
+            set => SetValue(ValueProperty, value);
+        }
+
+        public static readonly DependencyProperty ValueProperty =
+            DependencyProperty.Register("Value", typeof(int), typeof(MyDependencyObject),
+                new PropertyMetadata(0, OnValueChanged));
+
+        private static void OnValueChanged(DependencyObject d,DependencyPropertyChangedEventArgs e)
+        {
+            int oldValue = (int)e.OldValue;
+            int newValue = (int)e.NewValue;
+        }
+
+
+        public int Minimum
+        {
+            get => (int)GetValue(MinimumProperty);
+            set => SetValue(MinimumProperty, value);
+        }
+
+        public static readonly DependencyProperty MinimumProperty =
+            DependencyProperty.Register(nameof(Minimum), typeof(int),
+                typeof(MyDependencyObject), new PropertyMetadata(0));
+
+
+        public int Maximum
+        {
+            get => (int)GetValue(MaximumProperty);
+            set => SetValue(MaximumProperty, value);
+        }
+
+        public static readonly DependencyProperty MaximumProperty =
+            DependencyProperty.Register(nameof(Maximum),
+                typeof(int), typeof(MyDependencyObject), new PropertyMetadata(100));
+    }
+```
+==注意：在get和set属性访问器的实现代码中，只能调用GetValue（）和SetValue方法。使用依赖属性，可以通过GetValue和SetValue方法从外部访问属性的值，UWP也是这样做的；因此，强类型化的属性访问器可能根部就不会被调用，包含他们仅为了方便为自定义代码中使用正常的属性语法==
+
+
+### 值变更回调和事件
+为了获得值变更的信息，依赖属性还支持值变更回调。在属性值发生变化时调用的Dependency-Property.Register方法中，可以添加一个DependencyPropertyChanged事件处理程序。
+
+在示例代码中，把OnValueChanged处理程序方法赋予PropertyMetadata对象的PropertyChangedCallback属性。在OnValueChanged方法中，可以用DependencyPropertyChangedEventArgs参数访问属性的新旧值。
+```csharp
+public class MyDependencyObject:DependencyObject
+{
+    public int Value
+    {
+        get=>(int)GetValue(ValueProperty);
+        set=>SetValue(ValueProperty,value);
+    }
+
+    public static readonly DependencyProperty ValueProperty=
+      DependencyProperty.Register(nameof(Value),typeof(int),
+      typeof(MyDependencyObject),
+      new PropertyMetadata(0,OnValueChanged,CoerceValue));
+    
+    private static void OnValueChanged(DependencyObject obj,DependencyPropertyChangedEventArgs e)
+    {
+        int oldValue=(int)e.OldValue;
+        int newValue=(int)e.NewValue;
+        //....
+    }
+}
+```
+
+
+### 路由事件
+第八章介绍了.NET事件模型。使用默认实现的事件，当触发事件时，将调用直接连接到事件的处理程序。使用UI技术时，对时间处理有不同的需求。在一些事件中，应该可以创建一个带有容器控件的处理程序，并对来自子控件的事件作出反应。这可以通过为.NET事件创建自定义实现代码来实现，例如第八章的add和remove访问器所示。
+
+UWP提供了路由事件。示例应用程序定义的用户界面包含一个复选框，如果选中它，就停止路由；
+一个按钮控件，其Tapped事件设置为OnTappedButton处理程序方法；
+一个网格，其Tapped事件设置为OnTappedGrid处理程序。
+
+Tapped事件是Universal Windows应用程序的一个路由事件。这个事件可以用鼠标、触摸屏和笔设备触发。（RoutedEvents/MainPage.xaml）
+```csharp
+    <Grid Tapped="OnTappedGrid">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <CheckBox x:Name="CheckStopRouting">Stop Routing</CheckBox>
+            <Button Click="OnCleanStatus">Clean Status</Button>
+        </StackPanel>
+
+        <Button Grid.Row="1" Tapped="OnTappedButton">Tap me!</Button>
+        <TextBlock Grid.Row="2" Margin="20" x:Name="textStatus"/>
+
+    </Grid>
+//------------------------------------------------------------------------
+    public sealed partial class MainPage : Page
+    {
+        public MainPage()
+        {
+            this.InitializeComponent();
+        }
+
+        private void OnTappedButton(object sender,TappedRoutedEventArgs e)
+        {
+            ShowStatus(nameof(OnTappedButton), e);
+            e.Handled = CheckStopRouting.IsChecked == true;
+        }
+
+        private void OnTappedGrid(object sender,TappedRoutedEventArgs e)
+        {
+            ShowStatus(nameof(OnTappedGrid), e);
+            e.Handled = CheckStopRouting.IsChecked == true;
+        }
+
+        private void ShowStatus(string status,RoutedEventArgs e)
+        {
+            textStatus.Text += $"{status} {e.OriginalSource.GetType().Name}";
+            textStatus.Text += "\r\n";
+        }
+
+        private void OnCleanStatus(object sender,RoutedEventArgs e)
+        {
+            textStatus.Text = string.Empty;
+        }
+    }
+```
+OnTappedXXX处理程序方法吧状态信息写入一个TextBlock，来显示处理程序方法和事件初始源的控件。
+
+运行应用程序，在网格内部单击按钮的外部，就会看到处理的OnTappedGrid事件，并把Grid空间触发事件源：OnTappedGrid Grid。
+单击按钮中间，会看到事件被路由。第一个调用的处理程序是OnTappedButton，其后是OnTappedGrid：
+OnTappedButton TextBlock
+OnTappedGrid TextBlock
+
+同样有趣的是，事件源不是按钮，而是TextBlock。原因在于，这个按钮使用TextBlock设置样式，来包含按钮的文本。如果单击按钮内的其他位置，还可以看到Grid或ContentPresenter是原始事件源。Grid和ContentPresenter是创建按钮的其他空控件。
+
+单击按钮之前，选中复选框CheckStopRouting，可以看到事件不在路由，因为事件参数的Handled属性被设置为True；
+OnTappedButton TextBlock
+
+在事件的Microsoft API文档中，可以在文档的备注部分看到事件类型是否被路由。在Universal Windows应用程序中，tapped、drag和drop、key up和key down、pointer、focus、manipulation事件是路由事件。
+
+
+
+### 附加属性
+依赖属性是可用于特定类型的属性。而通过附加属性，可以为其他类型定义属性。一些容器控件为其子空间定义了附加属性：例如，如果使用DockPanel控件，就可以为其子控件使用Dock属性。
+Grid控件定义了Row和Column属性。
+下面的代码说明了附加属性在XAML中的情况。Button类没有Grid.Dock属性，但它是从Grid控件附加的。
+```csharp
+    <Grid >
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Button Content="First" Grid.Row="0" Background="Yellow"/>
+        <Button Content="Sencond" Grid.Row="1" Background="Blue"/>
+    </Grid>
+
+
+//========================================================================
+
+    public class MyAttachedPropertyProvider:DependencyObject
+    {
+        public static readonly DependencyProperty MySampleProperty=
+            DependencyProperty.RegisterAttached(
+            "MySample",
+            typeof(string),
+            typeof(MyAttachedPropertyProvider),
+            new PropertyMetadata(string.Empty));
+
+        public static void SetMySample(UIElement element, string value) =>
+            element.SetValue(MySampleProperty, value);
+
+        public static string GetMyProperty(UIElement element) =>
+            (string)element.GetValue(MySampleProperty);
+    }
+```
+
+==注意：四五Grid.Row属性只能添加到Grid控件中的元素。实际上，附加属性也可以添加到任何元素上。但无法使用这个属性的值。Grid控件能够识别这个属性，并从其子元素读取它，已安排其子元素。它不从子元素的子元素读取==
+
+在XAML代码中，附加属性现在可以附加到任何元素上。第二个button控件button2为自身附加了属性MyAttachedPropertyProvider.MySample，其值指定为42。
+```csharp
+    <Grid x:Name="grid1">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Button Content="button1" x:Name="button1" Grid.Row="0" Background="Yellow"/>
+        <Button Content="button2" x:Name="button2" Grid.Row="1" Background="Blue" local:MyAttachedPropertyProvider.MySample="42"/>
+        <ListBox Grid.Row="2" x:Name="list1"/>
+    </Grid>
+```
