@@ -472,3 +472,54 @@ Grid控件定义了Row和Column属性。
         <ListBox Grid.Row="2" x:Name="list1"/>
     </Grid>
 ```
+代码隐藏中执行相同的操作时，必须调用MyAttachedPropertyProvider类的静态方法SetMyProperty。不能扩展Button类，使其包含某个属性。SetProperty方法获取一个应该由该属性及其值扩展的UIElement实例。在如下代码中，把该属性附加到button1中，将其值设置为Sample Value。
+```csharp
+public MainPage()
+{
+    InitializeComponent()
+    MyAttachedPropertyProvider.SetMySample(button1,"sample value");
+}
+```
+
+为了读取分配给元素的附加属性，可以使用VisualTreeHelper迭代层次结构中的每个元素，并试图读取其附加属性。
+VisualTreeHelper用于在运行期间读取元素的可见树。
+GetChildrenCount方法返回子元素的数量。为了访问子元素，可以使用GetChild方法，通过第二个参数传递一个元素的索引，该方法返回元素。只有当元素的类型为FrameworkElement（或派生于它），且用Func参数传递的谓词返回true时，该方法的实现代码才返回元素。
+```csharp
+private IEnumerable<FrameworkElement> GetChildren(FrameworkElement element,Func<FrameworkElement,bool> pred)
+{
+    int childrenCount=VisualTreeHelper.GetC hildrenCount(rootElement);
+
+    for(int i=0;i<childrenCount;i++)
+    {
+        var child=VisualTreeHelper.GetChild(rootElement,i) as FrameworkElement;
+        if(child!=null && pred(child))
+        {
+            yield return child;
+        }
+    }
+}
+```
+
+GetChildren方法现在在页面的构造函数中用于把带有附加属性的所有元素添加到ListBox控件中。
+```csharp
+public MainPage()
+{
+    InitializeComponent();
+    MyAttachedPropertyProvider.SetMySample(button1,"sample value");
+    foreach(var item in GetChildren(grid1,e=>
+      MyAttachedPropertyProvider.GetMySample(e) !=string.Empty))
+    {
+        list1.Items.Add($"{item.Name} : {MyAttachedPropertyProvider.GetMySample(item)}");
+    }
+}
+```
+
+运行应用程序时，会看到列表框中的两个按钮控件于下述值。
+
+<hr>
+<br>
+
+### 标记扩展
+通过标记扩展，可以扩展XAML的元素或特性语法。如果XML特性包含花括号，就表示这是标记扩展的一个符号。特性的标记扩展常常用作简写记号，而不再使用元素。
+
+这种标记扩展的示例时StaticResourceExtension。它可以查找资源。下面是带有gradientBrush1键的线性渐变笔刷的资源（MarkupExtensions/MainPage.xaml）
