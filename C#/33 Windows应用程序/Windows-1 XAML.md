@@ -522,4 +522,8 @@ public MainPage()
 ### 标记扩展
 通过标记扩展，可以扩展XAML的元素或特性语法。如果XML特性包含花括号，就表示这是标记扩展的一个符号。特性的标记扩展常常用作简写记号，而不再使用元素。
 
-这种标记扩展的示例时StaticResourceExtension。它可以查找资源。下面是带有gradientBrush1键的线性渐变笔刷的资源（MarkupExtensions/MainPage.xaml）
+这种标记扩展的示例时StaticResourceExtension。它可以查找资源。下面是带有gradientBrush1键的线性渐变笔刷的资源（MarkupExtensions/MainPage.xaml）:
+
+
+
+

@@ -1,0 +1,11 @@
+## 控件
+Windows应用程序的UI类的层次结构
+- `DependencyObject`——这个类位于Windows Runtime XAML元素的层次结构顶层。派生自DependencyObject的每个类都可以有依赖属性。在本章的XAML介绍中，已经介绍了依赖属性。
+- `UIElement`——这是带有试卷外观的元素基类。这个类提供了用户交互的功能，比如指针事件（PointerPressed、PointerMoved等），键处理事件（KeyDown、KeyUp），焦点事件（GotFocus、LostFocus），指针捕获（CapturePointer、PointerCanceled等），拖放（DragOver、Drop等）。这个类还提供了新的Lights属性，从构建好15063开始就可以通过light高亮显示。
+- `FrameworkElement`——类FrameworkElement派生自UIElement，添加了更多的特性。从FrameworkElement派生的类可以参与布局系统。属性MinWidth、MinHeight、Height和Width由FrameworkElement类定义。FrameworkElement也定义了生命周期事件：Loaded、SizeChanged、Unloaded都是这些事件中的一部分。数据绑定特性是FrameworkElement类定义的另一组功能。这个类定义了DataContext、DataContextChanged、SetBinding和GetBindingExpression API。
+- `Control`——Control类派生自FrameworkElement，是UI控件的基类，例如TextBox、Hub、DatePicker、SearchBox、UserControl等。控件通常有一个默认样式，其ControlTemplate分配给Template属性。Control类为基类UIElement定义的事件定义了可重写的On**方法。控件定义了TabIndex；用于前景和边界（Foreground、Background、BorderBrush、BorderThickness）的属性；启用它并使用键盘上的Tab键来访问它的属性（IsTabStop、TabIndex）；
+- `ContentControl`——类ContentControl派生自Control，允许将任何内容作为该控件的子内容。ContentControl的例子由AppBar、Frame、ButtonBase、GroupItem和ToolTip控件。ContentControl定义了可以分配任何内容的Content属性、分配DataTemplate的ContentTemplate属性、动态分配数据模板的ContentTemplateSelector以及用于简单动画的ContentTransitions属性。
+- `ItemsControl`——ContentControl只能有一个内容，而ItemsControl可以查看内容列表。ContentControl定义了要列出其子项的Content属性，而ItemsControl用Items属性实现了这个功能。ContentControl和ItemsControl都派生自基类Control。ItemsControl可以显示固定数量的项或通过列表绑定的项。派生自ItemControl的控件有ListView、GridView、ListBox、Pivot和Selector。
+- `Panel`——另一个可以作为项容器的类是Panel类。这个类派生自基类FrameworkElement。Panel用于定位和排列子对象。从Panel派生的类的例子有Canvas、Grid、StackPanel、VariableSizedWrapGrid、VirtualizingPanel、ItemsStackPanel、ItemsWrapGrid以及RelativePanel。
+- `RangeBase`——这个派生自Control类，是ProgressBar、ScrollBar和Slider的基类。RangeBase定义了当前值的Value属性、Minimum和Maximum属性，以及ValueChanged事件处理程序。
+- `FlyoutBase`——这个类直接派生自DependencyObject，允许在其他元素上显示用户界面——换句话说，它们是随时可弹出的。
