@@ -246,3 +246,743 @@ ctx.fillRect(0,0,150,75);
 |\<wbr>New	|规定在文本中的何处适合添加换行符。
 
 
+## 表格
+### 定义和用法
+<table>标签定义HTML元素表格
+简单的HTML表格由table元素和一个多个tr、th和td元素组成。
+
+tr元素定义表格行，th元素定义表头，td元素定义表格单元。
+更复杂的HTML表格也可能包括caption、col、colgroup、thead、ftoot以及tbody元素。
+
+### HTML与XHTML之间的差异
+
+
+|属性|值|描述|
+|:--|:--|:--|
+|align|left、center、right|规定表格相对周围元素的对齐方式|
+|bgcolor|rgb(x,x,x)、#xxxxxx，colorname|规定表格背景色|
+|border|pixels|规定表格边框的宽度|
+|cellpadding|pixels, %|规定单元边沿与其内容之间的空白|
+cellspacing|pixels,%|固定单元格之间的空白|
+|frame|void、above、below、hsides、lhs、rhs、vsides、box、border|规定外侧边框的那部分是可见的|
+|rules|none、groups、rows、cols、all|规定内边框的那个部分是可见的|
+|summary|text|规定表格的再要|
+|width|%，pixels|规定表格的宽度|
+
+```html
+<body>
+
+<h4>带有普通的边框：</h4>  
+<table border="1">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+<h4>带有粗的边框：</h4>  
+<table border="8">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+<h4>带有很粗的边框：</h4>  
+<table border="15">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+</body>
+```
+
+#### 带有普通的边框
+<table border="1">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+<h4>带有粗的边框：</h4>  
+<table border="8">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+<h4>带有很粗的边框：</h4>  
+<table border="15">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+
+|表格|描述|
+|:--|:--|
+|table|定义表格|
+|caption|定义表格标题|
+|th|定义表格的表头|
+|tr|定义表格的行|
+|td|定义表格单元|
+|thead|定义表格的页眉|
+|tbody|定义表格的主体|
+|tfoot|定义表格的页脚|
+|col|定义用于表格列的属性|
+|colgroup|定义表格列的组|
+
+<hr>
+
+```html
+<h4>横跨两列的单元格：</h4>
+<table border="1">
+<tr>
+  <th>姓名</th>
+  <th colspan="2">电话</th>
+</tr>
+<tr>
+  <td>Bill Gates</td>
+  <td>555 77 854</td>
+  <td>555 77 855</td>
+</tr>
+</table>
+
+<h4>横跨两行的单元格：</h4>
+<table border="1">
+<tr>
+  <th>姓名</th>
+  <td>Bill Gates</td>
+</tr>
+<tr>
+  <th rowspan="2">电话</th>
+  <td>555 77 854</td>
+</tr>
+<tr>
+  <td>555 77 855</td>
+</tr>
+</table>
+```
+<h4>横跨两列的单元格：</h4>
+<table border="1">
+<tr>
+  <th>姓名</th>
+  <th colspan="2">电话</th>
+</tr>
+<tr>
+  <td>Bill Gates</td>
+  <td>555 77 854</td>
+  <td>555 77 855</td>
+</tr>
+</table>
+
+<h4>横跨两行的单元格：</h4>
+<table border="1">
+<tr>
+  <th>姓名</th>
+  <td>Bill Gates</td>
+</tr>
+<tr>
+  <th rowspan="2">电话</th>
+  <td>555 77 854</td>
+</tr>
+<tr>
+  <td>555 77 855</td>
+</tr>
+</table>
+
+<hr>
+
+```html
+<table border="1">
+<tr>
+  <td>
+   <p>这是一个段落。</p>
+   <p>这是另一个段落。</p>
+  </td>
+  <td>这个单元包含一个表格：
+   <table border="1">
+   <tr>
+     <td>A</td>
+     <td>B</td>
+   </tr>
+   <tr>
+     <td>C</td>
+     <td>D</td>
+   </tr>
+   </table>
+  </td>
+</tr>
+<tr>
+  <td>这个单元包含一个列表：
+   <ul>
+    <li>苹果</li>
+    <li>香蕉</li>
+    <li>菠萝</li>
+   </ul>
+  </td>
+  <td>HELLO</td>
+</tr>
+</table>
+```
+<table border="1">
+<tr>
+  <td>
+   <p>这是一个段落。</p>
+   <p>这是另一个段落。</p>
+  </td>
+  <td>这个单元包含一个表格：
+   <table border="1">
+   <tr>
+     <td>A</td>
+     <td>B</td>
+   </tr>
+   <tr>
+     <td>C</td>
+     <td>D</td>
+   </tr>
+   </table>
+  </td>
+</tr>
+<tr>
+  <td>这个单元包含一个列表：
+   <ul>
+    <li>苹果</li>
+    <li>香蕉</li>
+    <li>菠萝</li>
+   </ul>
+  </td>
+  <td>HELLO</td>
+</tr>
+</table>
+
+<hr>
+
+```html
+<h4>背景颜色：</h4>
+<table border="1" 
+bgcolor="red">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+<h4>背景图像：</h4>
+<table border="1" 
+background="/i/eg_bg_07.gif">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+```
+
+<h4>背景颜色：</h4>
+<table border="1" 
+bgcolor="red">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+<h4>背景图像：</h4>
+<table border="1" 
+background="/i/eg_bg_07.gif">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+
+<hr>
+
+```html
+<h4>这个表格没有边框：</h4>
+<table>
+<tr>
+  <td>100</td>
+  <td>200</td>
+  <td>300</td>
+</tr>
+<tr>
+  <td>400</td>
+  <td>500</td>
+  <td>600</td>
+</tr>
+</table>
+
+<h4>这个表格也没有边框：</h4>
+<table border="0">
+<tr>
+  <td>100</td>
+  <td>200</td>
+  <td>300</td>
+</tr>
+<tr>
+  <td>400</td>
+  <td>500</td>
+  <td>600</td>
+</tr>
+</table>
+```
+
+<h4>这个表格没有边框：</h4>
+<table>
+<tr>
+  <td>100</td>
+  <td>200</td>
+  <td>300</td>
+</tr>
+<tr>
+  <td>400</td>
+  <td>500</td>
+  <td>600</td>
+</tr>
+</table>
+
+<h4>这个表格也没有边框：</h4>
+<table border="0">
+<tr>
+  <td>100</td>
+  <td>200</td>
+  <td>300</td>
+</tr>
+<tr>
+  <td>400</td>
+  <td>500</td>
+  <td>600</td>
+</tr>
+</table>
+
+
+<hr>
+
+```html
+<table border="1">
+<tr>
+  <td>Some text</td>
+  <td>Some text</td>
+</tr>
+<tr>
+  <td></td>
+  <td>Some text</td>
+</tr>
+</table>
+
+<p>正如您看到的，其中一个单元没有边框。这是因为它是空的。在该单元中插入一个空格后，仍然没有边框。</p>
+
+<p>我们的技巧是在单元中插入一个 no-breaking 空格。</p>
+
+<p>no-breaking 空格是一个字符实体。如果您不清楚什么是字符实体，请阅读关于字符实体的章节。</p>
+
+<p>no-breaking 空格由和号开始 ("&")，然后是字符"nbsp"，并以分号结尾(";")。</p>
+```
+
+<table border="1">
+<tr>
+  <td>Some text</td>
+  <td>Some text</td>
+</tr>
+<tr>
+  <td></td>
+  <td>Some text</td>
+</tr>
+</table>
+
+<p>正如您看到的，其中一个单元没有边框。这是因为它是空的。在该单元中插入一个空格后，仍然没有边框。</p>
+
+<p>我们的技巧是在单元中插入一个 no-breaking 空格。</p>
+
+<p>no-breaking 空格是一个字符实体。如果您不清楚什么是字符实体，请阅读关于字符实体的章节。</p>
+
+<p>no-breaking 空格由和号开始 ("&")，然后是字符"nbsp"，并以分号结尾(";")。</p>
+
+
+
+<hr>
+
+```html
+<h4>没有 cellpadding：</h4>
+<table border="1">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+<h4>带有 cellpadding：</h4>
+<table border="1" 
+cellpadding="10">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+```
+
+<h4>没有 cellpadding：</h4>
+<table border="1">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+<h4>带有 cellpadding：</h4>
+<table border="1" 
+cellpadding="10">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+
+<hr>
+
+```html
+<h4>没有 cellspacing：</h4>
+<table border="1">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+<h4>带有 cellspacing：</h4>
+<table border="1" 
+cellspacing="10">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+```
+
+<h4>没有 cellspacing：</h4>
+<table border="1">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+<h4>带有 cellspacing：</h4>
+<table border="1" 
+cellspacing="10">
+<tr>
+  <td>First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td>Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+
+<hr>
+
+```html
+<h4>单元背景：</h4>  
+<table border="1">
+<tr>
+  <td bgcolor="red">First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td 
+  background="/i/eg_bg_07.gif">
+  Second</td>
+  <td>Row</td>
+</tr>
+</table>
+```
+
+<h4>单元背景：</h4>  
+<table border="1">
+<tr>
+  <td bgcolor="red">First</td>
+  <td>Row</td>
+</tr>   
+<tr>
+  <td 
+  background="/i/eg_bg_07.gif">
+  Second</td>
+  <td>Row</td>
+</tr>
+</table>
+
+<hr>
+
+
+```html
+<table width="400" border="1">
+ <tr>
+  <th align="left">消费项目....</th>
+  <th align="right">一月</th>
+  <th align="right">二月</th>
+ </tr>
+ <tr>
+  <td align="left">衣服</td>
+  <td align="right">$241.10</td>
+  <td align="right">$50.20</td>
+ </tr>
+ <tr>
+  <td align="left">化妆品</td>
+  <td align="right">$30.00</td>
+  <td align="right">$44.45</td>
+ </tr>
+ <tr>
+  <td align="left">食物</td>
+  <td align="right">$730.40</td>
+  <td align="right">$650.00</td>
+ </tr>
+ <tr>
+  <th align="left">总计</th>
+  <th align="right">$1001.50</th>
+  <th align="right">$744.65</th>
+ </tr>
+</table>
+```
+
+<table width="400" border="1">
+ <tr>
+  <th align="left">消费项目....</th>
+  <th align="right">一月</th>
+  <th align="right">二月</th>
+ </tr>
+ <tr>
+  <td align="left">衣服</td>
+  <td align="right">$241.10</td>
+  <td align="right">$50.20</td>
+ </tr>
+ <tr>
+  <td align="left">化妆品</td>
+  <td align="right">$30.00</td>
+  <td align="right">$44.45</td>
+ </tr>
+ <tr>
+  <td align="left">食物</td>
+  <td align="right">$730.40</td>
+  <td align="right">$650.00</td>
+ </tr>
+ <tr>
+  <th align="left">总计</th>
+  <th align="right">$1001.50</th>
+  <th align="right">$744.65</th>
+ </tr>
+</table>
+
+
+<hr>
+
+```html
+<p><b>注释：</b>frame 属性无法在 Internet Explorer 中正确地显示。</p>
+
+<p>Table with frame="box":</p>
+<table frame="box">
+  <tr>
+    <th>Month</th>
+    <th>Savings</th>
+  </tr>
+  <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+</table>
+
+<p>Table with frame="above":</p>
+<table frame="above">
+  <tr>
+    <th>Month</th>
+    <th>Savings</th>
+  </tr>
+  <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+</table>
+
+<p>Table with frame="below":</p>
+<table frame="below">
+  <tr>
+    <th>Month</th>
+    <th>Savings</th>
+  </tr>
+  <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+</table>
+
+<p>Table with frame="hsides":</p>
+<table frame="hsides">
+  <tr>
+    <th>Month</th>
+    <th>Savings</th>
+  </tr>
+  <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+</table>
+
+<p>Table with frame="vsides":</p>
+<table frame="vsides">
+  <tr>
+    <th>Month</th>
+    <th>Savings</th>
+  </tr>
+  <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+</table>
+
+```
+
+<p><b>注释：</b>frame 属性无法在 Internet Explorer 中正确地显示。</p>
+
+<p>Table with frame="box":</p>
+<table frame="box">
+  <tr>
+    <th>Month</th>
+    <th>Savings</th>
+  </tr>
+  <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+</table>
+
+<p>Table with frame="above":</p>
+<table frame="above">
+  <tr>
+    <th>Month</th>
+    <th>Savings</th>
+  </tr>
+  <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+</table>
+
+<p>Table with frame="below":</p>
+<table frame="below">
+  <tr>
+    <th>Month</th>
+    <th>Savings</th>
+  </tr>
+  <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+</table>
+
+<p>Table with frame="hsides":</p>
+<table frame="hsides">
+  <tr>
+    <th>Month</th>
+    <th>Savings</th>
+  </tr>
+  <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+</table>
+
+<p>Table with frame="vsides":</p>
+<table frame="vsides">
+  <tr>
+    <th>Month</th>
+    <th>Savings</th>
+  </tr>
+  <tr>
+    <td>January</td>
+    <td>$100</td>
+  </tr>
+</table>
+
+
+
+
+
+
+
