@@ -421,3 +421,70 @@ ListView垂直滚动，因此下面讨论垂直移动。当VerticalShift设置�
     </td>
   </tr>
 </table>
+
+<hr>
+
+### 使用文本框
+包含Control派生控件的第一个示例显示了几个TextBox控件。在TextBox类中，可以将InputScope属性指定为大量值列表的值，如EmailNameOrAddress、CurrencyAmountAndSymbol或Formula。如果应用程序在平板模式下使用，并带有屏幕键盘，键盘会根据输入字段的需要调整不同的布局并显示键。
+
+示例代码的最后一个文本框是多行TextBox。为了让用户按下回车键，可以设置AcceptsReturn属性。同时，如果文本在一行中放不下，就设置TextWrapping属性，使得文本换行。文本框的高度设置为150.如果输入的文本在这个文本框中放不下，则使用附加属性ScrollViewer.VerticalScrollBarVisibility来显示滚动条。
+
+```csharp
+//TextPage.xaml
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel Margin="16">
+            <TextBox Header="Email" InputScope="EmailNameOrAddress"></TextBox>
+            <TextBox Header="Currency" InputScope="CurrencyAmountAndSymbol"></TextBox>
+            <TextBox Header="Alpha Numeric" InputScope="AlphanumericFullWidth"></TextBox>
+            <TextBox Header="Formula" InputScope="Formula"></TextBox>
+            <TextBox Header="Month" InputScope="DateMonthNumber"></TextBox>
+            <TextBox Header="multiline" AcceptsReturn="True" TextWrapping="wrap" 
+                     Height="150" ScrollViewer.VerticalScrollBarVisibility="Auto"/>
+        </StackPanel>
+    </Grid>
+
+//TextPage.xaml.cs
+    public sealed partial class TextPage:Page
+    {
+        public TextPage()
+        {
+            this.InitializeComponent();
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility =
+                Frame.CanGoBack ? AppViewBackButtonVisibility.Visible :
+                AppViewBackButtonVisibility.Collapsed;
+
+            base.OnNavigatedTo(e);
+        }
+    }
+====================================================================
+//MainPgae.xaml
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel>
+            <Button Content="Text " Click="{x:Bind OnText}"/>
+            <Button Content="Presenters" Click="{x:Bind OnPresenters}"/>
+        </StackPanel>
+    </Grid>
+
+//MainPage.xaml.cs
+        private void OnText(object sender, RoutedEventArgs e) =>
+            Frame.Navigate(typeof(TextPage));
+====================================================================
+
+```
+
+
+
+
+
+
+
+
+
+
+### 选择日期
+对于选择日期，可以使用多个选项。下面看看不同的选项，以及CalendarView控件的特殊特性。
+CalendarView配置为允许选择多个日期。每周的第一个工作日设置为周一，最小的以添设置为绑定属性MinDate，事件CalendarViewDayItemChang和SelectedDatesChanged分配给事件处理程序。
