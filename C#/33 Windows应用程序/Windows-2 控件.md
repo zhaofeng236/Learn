@@ -488,3 +488,310 @@ ListView垂直滚动，因此下面讨论垂直移动。当VerticalShift设置�
 ### 选择日期
 对于选择日期，可以使用多个选项。下面看看不同的选项，以及CalendarView控件的特殊特性。
 CalendarView配置为允许选择多个日期。每周的第一个工作日设置为周一，最小的以添设置为绑定属性MinDate，事件CalendarViewDayItemChang和SelectedDatesChanged分配给事件处理程序。
+```csharp
+
+        <StackPanel Orientation="Vertical">   //多选
+            <CalendarView x:Name="CalendaryView1" CalendarViewDayItemChanging="OnDayItemChanging"
+                          SelectionMode="Multiple" SelectedDatesChanged="OnDatesChanged"
+                          Margin="12" MinDate="{x:Bind MinDate,Mode=OneTime}" HorizontalAlignment="Center"
+                          FirstDayOfWeek="Monday"/>
+        </StackPanel>
+
+
+public DateTimeOffset MinDate{get;}=
+   DateTimeOffset.Parse("1/1/1965",new CultureInfo("zh-CN"));
+
+//MinDate属性设置为一个预定义的日期。用户不能使用日历提前一天到达。
+//最小的一天设置为绑定属性MinDate。
+
+//事件CalendarViewDayItemChanging和事件SelectedDatesChanged分配给事件处理程序。
+
+```
+在OnDayItemChanging事件处理程序中，应该将某些日期标记为special（特殊的）。当天之前的日期应该排除在选择之外，根据实际的预定情况，当天应该用彩线标记。
+
+为了获得预订，将定义GetBookings方法，已返回示例数据。在真正的应用程序中，可以从Web API或数据库中获得数据。GetBookings方法只返回从现在开始若干天（2，3，5...）的预订。通过返回一个元组得到一天内的预订数量（1,4,3...）。
+```csharp
+        private IEnumerable<(DateTimeOffset day, int bookings)> GetBookings()
+        {
+            int[] bookingDays = { 2, 3, 5, 8, 12, 13, 18, 21, 23, 27 };
+            int[] bookingsPerDay = { 1, 4, 3, 6, 4, 5, 1, 3, 1, 1 };
+
+            for (int i = 0; i < 10; i++)
+            {
+                yield return (DateTimeOffset.Now.Date.AddDays(bookingDays[i]), bookingsPerDay[i]);
+            }
+        }
+
+//bookingDays 当天之后的那几天
+//bookingsPerDay  对应预订的数量
+```
+
+当显示CalendarView的项时，将调用OnDayItemChanging方法。每个显示的日期都调用此方法。方法OnDayItemChanging是使用本地函数实现的。该方法的主块包含一个switch语句，基于数据绑定阶段来进行切换。
+
+CalendarView控件支持多个阶段，允许在不同的迭代中调整用户界面。
+第一阶段很快：此阶段之后，已经可以向用户显示一些信息。接下来的每个阶段都是如此。在以后的阶段中，可以从Web API中检索信息，并更新这些信息。
+
+在OnDayItemChanging的实现中：
+- 第一阶段调用本地函数RegisterUpdateCallback来注册对OnDayItemChanging事件处理程序的下一个调用。
+- 第二阶段，使用本地函数SetBlackoutDates将日期涂黑。
+- 第三阶段检索预订
+
+```csharp
+        private void OnDayItemChanging(CalendarView sender, CalendarViewDayItemChangingEventArgs args)
+        {
+            switch (args.Phase)
+            {
+                case 0:
+                    RegisterUpdateCallback();
+                    break;
+                case 1:
+                    SetBlackoutDates();
+                    break;
+                case 2:
+                    SetBookings();
+                    break;
+                default:
+                    break;
+            }
+```
+
+本地函数RegisterUpdateCallback只是调用CalendarViewDayItemChangingEventArgs参数的RegisterUpdateCallback，传递事件处理程序方法，因此再次调用此方法。
+
+本地函数SetBlackoutDates涂黑今天之前的日期，以及所有的星期六和星期天。从args.Item属性返回的CalendarViewDayItem定义了IsBlackout属性。
+```csharp
+private void OnDayItemChanging(CalendarView sender,CalendarViewDayItemChangingEventArgs args)
+{
+  //..
+  void RegisterUpdateCallback()=>
+    args.RegisterUpdateCallback(OnDayItemChanging);
+  //..
+}
+
+
+//--------------------------------------------------------------
+private void OnDayItemChanging(CalendarView sender,CalendarViewDayItemChangingEventArgs args)
+{
+  //...
+  void SetBlackoutDates()
+  {
+    if(args.Item.Date<DateTimeOffset.Now || args.Item.Date.DayOfWeek==
+      DayOfWeek.Saturday || args.Item.Date.DayOfWeek==DayOfWeek.Sunday)
+      {
+        args.Item.IsBlackout=true;
+      }
+      RegisterUpdateCallback();
+  }
+  //...
+}
+```
+
+最后，setBookings方法检索关于预订的信息。如果在预订中也发现了接收日期，会检索CalendarViewDayItem中找到的接收日期。如果是，则调用SetDensityColors，把红色或绿色的列表（取决于工作日）添加到日期中。最后，再次调用RegisterUpdateCallback本地函数；否则，只会在第三阶段调用该函数，显示第一天。
+```csharp
+        private void OnDayItemChanging(CalendarView sender, CalendarViewDayItemChangingEventArgs args)
+        {
+            switch (args.Phase)
+            {
+                case 0:
+                    RegisterUpdateCallback();
+                    break;
+                case 1:
+                    SetBlackoutDates();
+                    break;
+                case 2:
+                    SetBookings();
+                    break;
+                default:
+                    break;
+            }
+
+            void RegisterUpdateCallback() => args.RegisterUpdateCallback(OnDayItemChanging);
+
+            void SetBlackoutDates()
+            {
+                if (args.Item.Date < DateTimeOffset.Now || args.Item.Date.DayOfWeek == DayOfWeek.Saturday || args.Item.Date.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    args.Item.IsBlackout = true;
+                }
+                RegisterUpdateCallback();
+            }
+
+            void SetBookings()
+            {
+                var bookings = GetBookings().ToList();
+
+                var booking = bookings.SingleOrDefault(b => b.day.Date == args.Item.Date.Date);
+                if (booking.bookings > 0)
+                {
+                    var colors = new List<Color>();
+                    for (int i = 0; i < booking.bookings; i++)
+                    {
+                        if (args.Item.Date.DayOfWeek == DayOfWeek.Saturday || args.Item.Date.DayOfWeek == DayOfWeek.Sunday)
+                        {
+                            colors.Add(Colors.Red);
+                        }
+                        else
+                        {
+                            colors.Add(Colors.Green);
+                        }
+                    }
+
+                    args.Item.SetDensityColors(colors);
+                }
+                RegisterUpdateCallback();
+            }
+        }
+```
+
+当用户选择日期时，将调用OnDatesChanged方法。在这个方法中，所有选中的日期都将在CalendarViewSelectedDatesChangedEventArgs中接收。
+
+选中的日期写入currentDatesSelected列表，取消选择的日期将再次从列表中删除。使用sring.Join，所有选中的日期都显示在MessageDialog中。
+```csharp
+
+        private List<DateTimeOffset> currentDatesSelected = new List<DateTimeOffset>();
+
+        private async void OnDatesChanged(CalendarView sender, CalendarViewSelectedDatesChangedEventArgs args)
+        {
+
+            currentDatesSelected.AddRange(args.AddedDates);
+            args.RemovedDates.ToList().ForEach(date => currentDatesSelected.Remove(date));
+
+            string selectedDates = string.Join(", ", currentDatesSelected.Select(d => d.ToString("d")));
+
+            await new MessageDialog($"dates selected: {selectedDates}").ShowAsync();
+        }
+```
+
+
+<br>
+
+当使用CalendarDatePicker时，没有像CalendarView那么多特性，但是他不会占用屏幕的空间，除非用户打开他来选择日期。CalendarDatePicker定义了DateChanged事件：只能选择一个日期。
+```csharp
+<CalendarDatePicker x:Name="CalendarDatePicker1" Grid.Row="0" Grid.Column"1" DateChanged="OnDateChanged" Margin="12">
+
+
+//------------------------------------------------------------------
+        private async void OnDateChanged(CalendarDatePicker sender, CalendarDatePickerDateChangedEventArgs args)
+        {
+            await new MessageDialog($"date changed to {args.NewDate}").ShowAsync();
+        }
+```
+
+
+<br>
+
+DatePicker的XAML代码非常相似。他只是不显示日历来选择日期，而是有一个完全不同的视图。
+```csharp
+// MainPage.xaml
+<DatePicker DateChanged="OnDateChanged1" x:Name="DatePicker1" Grid.Row="1" Margin="12">
+
+//--------------------------------------------------------------------
+        private async void OnDateChanged1(object sender, DatePickerValueChangedEventArgs e)
+        {
+            await new MessageDialog($"date changed to {e.NewDate}").ShowAsync();
+        }
+```
+
+<br>
+
+选择日期的最后一个选项是Flyout。Flyout可以与其他控件一起使用。这里使用一个按钮控件，按钮的Flyout属性定义为使用DatePickerFlyout。
+```csharp
+        <Button Content="Select a Date" Grid.Row="1" Grid.Column="1" Margin="12">
+            <Button.Flyout>
+                <DatePickerFlyout x:Name="DatePickerFlyout1" DatePicked="OnDatePicked" />
+            </Button.Flyout>
+        </Button>
+//---------------------------------------------------------------
+        private async void OnDatePicked(DatePickerFlyout sender, DatePickedEventArgs args)
+        {
+            await new MessageDialog($"date changed to {args.NewDate}").ShowAsync();
+        }
+```
+
+
+
+<br>
+<hr>
+
+### 范围控件
+范围控件，如ScrollBar、ProgressBar和Slider都派生自同一个基类RangeBase。
+<table>
+  <th>控件</th>
+  <th>说明</th>
+  <tr>
+    <td>
+      ScrollBar   
+    </td>
+    <td>
+      ScrollBar控件包含一个Thumb，用户可以从Thumb中选择一个值。例如，如果文档在屏幕中放不下，就可以使用滚动条。一些控件包含滚动条，如果内容过多，就显示滚动条。
+    </td>
+  </tr>
+  <td>
+      ProgressBar   
+    </td>
+    <td>
+      使用ProgressBar控件，可以指示事件较长的操作的进度。
+    </td>
+  </tr>  
+  <td>
+      Slider
+    </td>
+    <td>
+      使用Slider控件，用户可以移动Thumb，选择一个范围的值。
+    </td>
+  </tr>    
+</table>
+
+
+1、ProgressBar
+示例应用程序显示了两个ProgressBar控件。将第二个控件的IsIndeterminate属性设置为true。如果不知道一个活动需要多长时间，最好使用这个属性。如果想知道操作需要多长时间，可以在ProgressBar中设置当前状态值，而不需要设置IsIndeterminate模式；默认值为False（ControlsSamples/Views/RangeControlsPage.xaml）；
+
+```csharp
+//mainPage.xaml
+        <StackPanel>
+            <Button Content="Range Controls" Click="{x:Bind OnRange}"/>
+        </StackPanel>
+//mainPage.xaml.cs----------------------------------------------+
+private void OnRange() => Frame.Navigate(typeof(RangeControlsPage));
+
+
+//--------------------------------------------------------------
+//RangeControlsPage.xaml
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <ProgressBar x:Name="progressBar1" Grid.Row="0" Margin="12"/>
+        <ProgressBar IsIndeterminate="true" Grid.Row="1" Margin="12"/>
+
+//--------------------------------------------------------------
+//RangeControlsPage.xaml.cs
+        public RangeControlsPage()
+        {
+            this.InitializeComponent();
+            ShowProgress();
+        }
+
+
+        private void ShowProgress()
+        {
+            var timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(0.002);
+            int i = 0;
+            timer.Tick += (sender, e) =>
+              {
+                  progressBar1.Value = i++;
+                  if (i >= 100)
+                  {
+                      i = 0;
+                  }
+              };
+            timer.Start();
+        }
+```
+
+当加载页面时，将调用ShowProgress方法。这里，第一个ProgressBar的当前值使用DispatcherTimer设置的。将DispatherTimer配置为每秒触发一次，ProgressBar的Value属性每秒都递增。
+
+当运行程序时，可以看到两个ProgressBar控件处于活动状态。第一个是进度条，第二个显示水平漂浮的点。
