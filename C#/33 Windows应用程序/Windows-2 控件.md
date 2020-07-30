@@ -795,3 +795,250 @@ private void OnRange() => Frame.Navigate(typeof(RangeControlsPage));
 当加载页面时，将调用ShowProgress方法。这里，第一个ProgressBar的当前值使用DispatcherTimer设置的。将DispatherTimer配置为每秒触发一次，ProgressBar的Value属性每秒都递增。
 
 当运行程序时，可以看到两个ProgressBar控件处于活动状态。第一个是进度条，第二个显示水平漂浮的点。
+
+
+### Slider
+使用Slider控件，可以指定Minimum和Maximum值，并使用Value属性来分配当前值。代码示例使用一个文本框显示滑块的当前值。
+
+```csharp
+<Slider x:Name="slider" Minimum="10" Maximum="140" Value="60"
+  Grid.Row="2" Margin="12"/>
+
+<TextBox Header="Slider Value" IsReadOnly="True"
+  Text="{x:Bind slider.Value,Mode=OneWay}" Grid.Row="3" Margin="12">
+```
+
+
+<br>
+<hr>
+
+### 内容控件
+内容控件的Content属性允许添加任何单一的内容。不允许使用多个内容对象作为Content属性的直接子对象，但是可以添加StackPanel，它本身可以把多个控件作为子控件。
+
+<table>
+<catption aligment="center">内容控件</caption>
+<th>控件</th>
+<th>说明</th>
+<tr>
+  <td>
+    ScrollViewer
+  </td>
+  <td>
+    ScrollViewer是一个内容控件，可以包含单项，并提供水平和垂直的滚动条。还可以使用带有附加属性的ScrollViewer，如前面介绍的ParallaxViewSample所示。
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>
+    Frame
+  </td>
+  <td>
+    Frame控件用于页面之间的导航
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>
+    SelectorItem
+    <p>ComboBoxItem
+    <p>FlipViewItem
+    <p>GridViewItem
+    <p>ListBoxItem
+    <p>ListViewItem
+    <p>GroupItem
+    <p>PivotItem
+  </td>
+  <td>
+    这些控件是ContentControl对象，作为属于某ItemsControl的项。例如，ComboBox控件包含ComboBoxItem对象，ListBox控件包含ListBoxItem对象，Pivot控件包含PivotItem对象。GroupItem对象通常不直接只用；使用带有分组配置的ItemsControl派生控件时，会使用他们。
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>
+    ToolTip
+  </td>
+  <td>
+    当用户悬停在信息上，显示工具提示时，ToolTip会弹出一个窗口。可以使用ToolTipService.ToolTip附件属性配置ToolTip。工具提示只能时文本；这是一个内容控件。
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>
+    CommandBar
+  </td>
+  <td>
+    使用CommandBar，可以安排AppBarButton控件和属于命令元素的控件（如AppBarSeparator）。
+    <p>CommandBar为这些控件提供了一些布局特性。在Windows8中，使用AppBar而不是CommandBar——这就是为什么按钮有这些名称的原因。
+    <p>CommandBar派生自AppBar。但是，如果CommandBar中布局不能满足需求，也可以使用其他控件来布局命令。
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>
+    ContentDialog
+  </td>
+  <td>
+    使用ContentDialog打开一个对话框。可以使用对话框所需的任何XAML控件自定义此控件。
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>
+    SwipeControl
+  </td>
+  <td>
+    SwipeControl允许通过触摸交互执行上下文命令——例如，在用户向左或向右滑动时为某些项打开特定的操作。
+  </td>
+</tr>
+</table>
+
+<br>
+<hr>
+
+## 按钮
+按钮组成了一个层次结构。ButtonBase类派生自ContentControl，，因此按钮有一个Content属性，可以包含任何单个内容。ButtonBase类还定义了Command属性；因此，所有按钮都可以有一个相关的命令。下面比较一下不同的按钮。
+<table>
+<th>控件</th>
+<th>说明</th>
+<!--下一行-->
+<tr>
+  <td>Button</td>
+  <td>
+    Button类时最常用的按钮。这个类派生自ButtonBase（其他按钮也一样）。ButtonBase时所有按钮的基类。
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>HyperlinkButton</td>
+  <td>
+    HyperlinkButton显示为链接。可以在浏览器中打开Web页面、打开其他应用程序或导航到其他页面。（Hyper——超级）
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>RepeatButton</td>
+  <td>
+    RepeatButton是一个按钮，当用户按下按钮时，Click事件连续触发。使用常规按钮，Click事件只触发一次。（Repeat——重复）
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>AppBarButton</td>
+  <td>
+    AppBarButton用于激活应用程序中的命令。可以将该按钮添加到CommandBar中，并使用图标和标签来显示用户的信息。
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>
+    AppBarToggleButton（Toggle——切换）
+    <p>CheckBox
+    <p>RadioButton
+  </td>
+  <td>
+    CheckBox、RadioButton和AppBarToggleButton派生自基类ToggleButton。TogleButton可以使用“bool？”表示三种状态：Checked、Unchecked和Indeterminate。AppBarToggleButton是CommandBar的切换按钮。
+  </td>
+</tr>
+</table>
+
+
+### 替换按钮的内容
+按钮是一个内容控件，可以有任何内容。下面的示例包含Ellipse和TextBlock的按钮添加Grid控件。该按钮还定义了Click事件，以演示它的不同外观，但它的行为是相同的。
+
+```csharp
+//ButtonsPage.xaml
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+
+        <Button Margin="12" Click="OnButtonClick">
+            <Grid>
+                <Ellipse Width="200" Height="90" Fill="red"/>
+                <TextBlock HorizontalAlignment="Center" 
+                           VerticalAlignment="Center" Text="Click Me!" FontSize="24"/>
+            </Grid>
+        </Button>
+
+//Ellipse 椭圆
+//Navigate 导航
+//Content属性替换了前景色，但是按钮仍然具有默认的背景。
+//要替换按钮的完整外观，并使按钮变成非矩形的形状，需要为按钮创建一个ControlTemplate。
+
+        <HyperlinkButton NavigateUri="https://www.zhcw.com"
+                         Content="C# Infos" Grid.Column="1" Style="{StaticResource TextBlockButtonStyle}" FontSize="24" />
+    </Grid>
+```
+使用HyperlinkButton进行链接，可以轻松激活其他一个用程序。将NavigateUri属性设置为URL，单击按钮，会打开默认浏览器。
+
+默认情况下，HyperlinkButton看起来像浏览器中的一个链接。使用HyperlinkButton可以设置NavigateUri或定义Click事件。但不能同时执行这两个操作。作为Click事件的操作，可以以编程方式导航到另一个页面。
+不仅可以为NavigateUri属性分配`http://` 或 `https://` ，还可以使用 `ms-appx://` 激活其他应用程序。
+
+
+### 项控件
+与ContentControl相反，ItemsControl控件可以包含项的列表。通过ItemsControl可以使用Items属性来确定某些项，也可以使用数据绑定和ItemsSource属性来确定某些项。但不能同时使用这两中属性。
+
+<table>
+  <th>控件</th>
+  <th>说明</th>
+  <tr>
+    <td>
+      ItemsControl   
+    </td>
+    <td>
+      ItemsControl时所有其他项控件的基类，也可以直接用于显示项的列表
+    </td>
+  </tr>
+<!--下一行-->
+<tr>
+  <td>Pivot</td>
+  <td>
+    Pivot控件是为应用程序创建类似于表的行为的控件。
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>AutoSuggestBox</td>
+  <td>
+    AutoSuggestBox替换了先前的SearchBox。使用AutoSuggestBox，用户可以输入文本，控件提供自动完成功能。这个控件的使用详见36章。
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>
+    ListBox
+    <p>ComboBox
+    <p>FlipView
+  </td>
+  <td>
+    ListBox、ComboBox和FlipView是三个派生自基类Selector的控件。
+    <p>Selector派生自ItemsControl，并添加SelectedItem和SelectedValue属性，以便从集合中选择某项。
+    <p>ListBox显示了用户可以从中选择的列表。
+    <p>ComboBox结合了一个文本框和一个下拉列表，允许选择列表，且使用更少的屏幕空间。
+    <p>FlipView控件允许使用触摸交互来浏览项目列表，而只显示一项。
+  </td>
+</tr>
+<!--下一行-->
+<tr>
+  <td>
+    ListView
+    <p>GridView
+  </td>
+  <td>
+    ListView和GridView派生自基类ListViewBase，ListViewBase派生自Selector。
+    因此这些是最强大的的选择器。
+    ListViewBase提供了附加的拖放项、重新排序项、添加页眉和页脚，并允许选择多个项。ListView垂直显示项（但是也可以创建一个模板，水平显示列表）。
+    <p>GridView用行和列显示数据项。
+  </td>
+</tr>
+</table>
+
+
+### Flyout控件
+Flyout控件用于在其他UI元素（例如上下文菜单）之上打开窗口。所有的Flyout都派生自基类FlyoutBase。
+FlyoutBase类定义了一个Placement属性，允许定义Flyout的位置。它可以在屏幕中居中，也可以围绕目标元素定位。
+
+- Flyout控件——MenuFlyout控件用于显示菜单项的列表
+- Flyout——Flyout控件可以包含一个能使用XAML元素自定义的项。
+
