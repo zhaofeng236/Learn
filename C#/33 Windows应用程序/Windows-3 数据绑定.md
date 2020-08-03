@@ -356,3 +356,360 @@ ObservableCollection通过接口INotifyCollectionChanged实现了更改通知。
 
 
 
+
+
+### 导航
+如果应用程序是由多个页面组成的，就需要能在这些页面之间导航。有不同的应用程序结构需要导航，比如使用汉堡包按钮导航到不同的根页面，或者使用不同的选项卡和替换选项卡。
+如果需要为用户提供导航的方法，导航的核心是Frame类。Frame类允许使用Navigate方法，选择性的传递参数，导航到具体的页面。Frame类有一个要导航的页面堆栈，因此可以后退、前进，限制堆栈中页面的数量等。
+导航的一个重要方面就是能返回。
+
+#### 导航回最初的页面
+下面开始创建一个有多个页面的Windows应用程序，在页面之间导航。模板生成的代码在App类中包含OnLaunched方法，该方法中，实例化一个Frame对象，再调用Navigate方法，导航到MainPage。（PageNavigation/App.xaml.cs）
+```csharp
+        protected override void OnLaunched(LaunchActivatedEventArgs e)
+        {
+            Frame rootFrame = Window.Current.Content as Frame;
+
+            // 不要在窗口已包含内容时重复应用程序初始化，
+            // 只需确保窗口处于活动状态
+            if (rootFrame == null)
+            {
+                // 创建要充当导航上下文的框架，并导航到第一页
+                rootFrame = new Frame();
+
+                rootFrame.NavigationFailed += OnNavigationFailed;
+
+                if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
+                {
+                    //TODO: 从之前挂起的应用程序加载状态
+                }
+
+                // 将框架放在当前窗口中
+                Window.Current.Content = rootFrame;
+            }
+
+            if (e.PrelaunchActivated == false)
+            {
+                if (rootFrame.Content == null)
+                {
+                    // 当导航堆栈尚未还原时，导航到第一页，
+                    // 并通过将所需信息作为导航参数传入来配置
+                    // 参数
+                    rootFrame.Navigate(typeof(MainPage), e.Arguments);
+                }
+                // 确保当前窗口处于活动状态
+                Window.Current.Activate();
+            }
+        }
+```
+Frame类有一个已访问的页面堆栈。GoBack方法可以在这个堆栈中回航（如果CanGoBack属性返回true），GoForward方法可以在后退后前进到下一页。Frame类还提供了几个导航事件，如Navigating、Navigated、NavigationFalied和NavigationStopped。
+
+为了查看导航操作，除了MainPage之外，还创建SecondPage和ThirdPage页面，在这些页面之间导航。在MainPage上，可以导航到SecondPage，通过传递一些数据可以从SecondPage导航到ThirdPage。
+
+因为这些页面之间的通用功能，所以创建一个基类NavigationPage，所有这些页面都派生自它。NavigationPage类派生自基类Page，实现了接口INotifyPropertyChanged，用于更新用户界面。（PageNavigation/NavigationPage.cs）
+
+```csharp
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
+using Windows.UI.Core;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
+
+namespace WinTest
+{
+    public abstract class NavigationPage : Page, INotifyPropertyChanged
+    {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged(
+            [CallerMemberName] string propertyName = null) =>
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+
+        protected bool SetProperty<T>(ref T item, T value, [CallerMemberName] string propertyName = null)
+        {
+            if (EqualityComparer<T>.Default.Equals(item, value)) return false;
+            item = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+
+
+        private string _navigationMode;
+        public string NavigationMode
+        {
+            get => _navigationMode;
+            set => SetProperty(ref _navigationMode, value);
+        }
+
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            NavigationMode = $"Navigation Mode: {e.NavigationMode}";
+            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility = Frame.CanGoBack ? AppViewBackButtonVisibility.Visible : AppViewBackButtonVisibility.Collapsed;
+
+            base.OnNavigatedTo(e);
+        }
+
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            base.OnNavigatingFrom(e);
+        }
+
+        protected override void OnNavigatedFrom(NavigationEventArgs e)
+        {
+            base.OnNavigatedFrom(e);
+        }
+    }
+}
+
+```
+
+
+#### 重写Page类的导航
+Page类是NavigationPage的基类（也是XAML页面的基类），该类定义了用于导航的方法。当导航到相应的页面时，会调用OnNavigatedTo方法。在这个页面中，可以看到导航是如何操作的（NavigationMode属性）和导航参数。OnNavigationFrom方法是从页面中退出时调用的第一个方法。
+
+在这里，导航可以取消。从这个页面中退出时，最终调用的是OnNavigatedFrom方法。在这里应该清理OnNavigatedTo方法分配的资源。
+
+```csharp
+public abstract class NavigationPage:Page,INotifyPropertyChanged
+{
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+        NavigationMode=$"Navigation Mode:{e.NavigationMode}";
+        //...
+    }
+
+
+    protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+    {
+        base.OnNavigationFrom(e);
+    }
+
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        base.OnNavigatedFrom(e);
+    }
+}
+
+```
+
+
+
+
+#### 在页面之间导航
+下面三个页面，为了使用NavigationPage类，代码隐藏文件需要修改，以使用NavigationPage作为基类。
+```csharp
+public sealed partial class MainPage:NavigationPage
+{
+    //...
+}
+
+//基类的变化也需要反映在XAML文件中，使用NavigationPage元素代替Page
+<local:NavigationPage>
+</local>
+
+//MainPage包含一个TextBlock元素和一个Button控件，TextBlock元素绑定到BasePage中声明的NavigationMode属性上，按钮的Click事件绑定到OnNavigateToSecondPage方法上。
+<TextBlock Text="{x:Bind NavigationMode,Mode=OneWay}">
+
+//处理程序方法OnNavigateToSecondPage使用Frame.Navigate导航到SecondPage。
+
+//Frame是Page类上返回Frame实例的一个属性。
+
+public void OnNavigateToSecondPage()
+{
+    Frame.Navigate(typeof(SecondPage))
+}
+
+
+//当从SecondPage导航到ThirdPage时，把一个参数传递给目标页面。参数可以在绑定到Data属性的文本框中输入。
+<TextBox Header="Data" Text="{x:Bind Data,Mode=TwoWay}">
+<Button Content="navigate to Third Page" 
+    Click="{x:Bind OnNavigateToThirdPage,Mode=OneTime}">
+
+//在代码隐藏文件中，将Data属性传递给Navigate方法。
+public string Data{get;set;}
+public ovid OnNavigateToThirdPage()
+{
+    Frame.Navigate(typeof(ThirdPage),Data);
+}
+
+//接受到参数在ThirdPage中检索。在OnNavigatedTo方法中，NavigationEventArgs用Parameter属性接收参数。Parameter属性是object类型，可以给页面导航传递任何数据。
+
+protected override void OnNavigatedTo(NavigationEventArgs e)
+{
+    base.OnNavigatedTo(e);
+    Data=e.Parameter as string ;
+}
+
+private string _data;
+public string Data
+{
+    get=>_data;
+    set=>SetProperty(ref _data,value);
+}
+```
+
+#### 后退按钮
+当应用程序中有导航要求时，必须包括返回的方式。在Windows8中，定制的后退按钮位于页面的左上角。在Windows10中仍然可以这样做。
+要启动这个后退按钮，需要把SystemNavigationManager的AppViewBackButtonVisibility设置为AppViewBackButton Visibility，在下面的代码中，Frame.CanGoBack属性返回true时，就是这种情况。
+```csharp
+protected override void OnNavigatedTo(NavigationEventArgs e)
+{
+    NavigationMode=$"Navigation Mode:{e.NavigationMode}";
+    SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility=
+    Frame.CanGoBack ? AppViewBackButtonVisibility.Visible:
+    AppViewBackButtonVisibility.Collapsed;
+
+    base.OnNavigatedTo(e);
+}
+
+//接下来，使用SystemNavigationManager类的BackRequested事件。对BackRequestedEvent的响应可以用于完整的应用程序。如果在这几页上显示这个功能，还可以把这段代码放大噢耶面的OnNavigatedTo方法中。
+
+// app.xaml.cs
+        protected override void OnLaunched(LaunchActivatedEventArgs e)
+        {
+            //...
+            SystemNavigationManager.GetForCurrentView().BackRequested +=
+                App_BackRequested;
+            Window.Current.Activate();
+        }
+
+        private void App_BackRequested(object sender,BackRequestedEventArgs e)
+        {
+            Frame rootFrame = Window.Current.Content as Frame;
+            if (rootFrame == null) return;
+            if (rootFrame.CanGoBack && e.Handled == false)
+            {
+                e.Handled = true;
+                rootFrame.GoBack();
+            }
+        }
+
+```
+
+在桌面模式中运行这个应用程序时，可以看到后退按钮位于上边界的左边。如果应用程序在平板模式下运行，边界是不可见的，但后退按钮显示在底部边界Windows按钮的旁边。
+
+
+<br>
+<hr>
+
+### Hub
+ 也可以让用户使用Hub控件在单个页面的内容之间导航。这里可以使用的一个例子是，希望显示一个图像，作为应用程序的入口点，用户滚动时显示更多信息（参见Store的照片搜索应用程序）。
+
+ 使用Hub控件可以定义多个部分。每个部分有标题和内容。也可以让标题可以单击，例如，单行到详细信息页面上。以下代码示例定义了一个Hub控件，在其中可以单击部分2和部分3的标题。单击某部分的标题时，就调用Hub控件的SectionHeaderClick事件指定的方法。每个部分都包含一个标题和一些内容。部分的内容由DataTemplate定义(NavigationControls/HubPage.xaml)。
+ ```csharp
+
+ // HubPage.xaml
+    <Grid>
+        <Hub Background="{ThemeResource ApplicationPageBackgroundThemeBrush} "
+             SectionHeaderClick="{x:Bind OnHeaderClick}">
+            <Hub.Header>
+                <StackPanel Orientation="Vertical">
+                    <TextBlock>Hub Header</TextBlock>
+                    <TextBlock Text="{x:Bind Info,Mode=TwoWay}"/>
+                </StackPanel>
+            </Hub.Header>
+
+            <HubSection Width="400" Background="LightBlue" Tag="section1">
+                <HubSection.Header>
+                    <TextBlock>Section 1 Header</TextBlock>
+                </HubSection.Header>
+                <DataTemplate>
+                    <TextBlock>Section 1</TextBlock>
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Width="300" Background="LightGreen" IsHeaderInteractive="True"
+                        Tag="Section2">
+                <HubSection.Header>
+                    <TextBlock>Section 2 Header</TextBlock>
+                </HubSection.Header>
+                <DataTemplate>
+                    <TextBlock>Section 2</TextBlock>
+                </DataTemplate>
+            </HubSection>
+
+            <HubSection Width="300" Background="LightGoldenrodYellow" IsHeaderInteractive="True" 
+                        Tag="section3">
+                <HubSection.Header>
+                    <TextBlock>Section Header</TextBlock>
+                </HubSection.Header>
+                <DataTemplate>
+                    <TextBlock>Section 3</TextBlock>
+                </DataTemplate>
+            </HubSection>
+        </Hub>
+    </Grid>
+
+// HubPage.xaml.cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Windows.UI.Core;
+using Windows.UI.Xaml;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
+
+namespace WinTest
+{
+    public sealed partial class HubPage:Page
+    {
+        public HubPage()
+        {
+            this.InitializeComponent();
+        }
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility =
+                AppViewBackButtonVisibility.Visible;
+        }
+
+        public void OnHeaderClick(object sender,HubSectionHeaderClickEventArgs e)
+        {
+            Info = e.Section.Tag as string;
+        }
+
+// 单击标题部分时，Info依赖属性就指定Tag属性的值。Info属性绑定在Hub控件的标题上。
+
+        public string Info
+        {
+            get => (string)GetValue(InfoProperty);
+            set => SetValue(InfoProperty, value);
+        }
+
+        public static readonly DependencyProperty InfoProperty =
+            DependencyProperty.Register("Info", typeof(string),
+                typeof(HubPage), new PropertyMetadata(string.Empty));
+    }
+}
+
+
+//MainPage.xaml
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel>
+            <Button Click="{x:Bind OnGotoHub}">Hub</Button>
+        </StackPanel>
+    </Grid>
+
+//MainPage.xaml.cs
+        public void OnGotoHub()
+        {
+            Frame.Navigate(typeof(HubPage));
+        }
+ ```
+ 单击标题部分时，Info依赖属性就指定Tag属性的值。Info属性绑定在Hub控件的标题上。
+ 运行这个应用程序时，可以看到多个Hub部分，在部分2和部分3上有see More链接。因为在这些部分中，将IsHeaderinteractive
+设置为true。当然，可以创建一个定制的标题的模板，给标题指定不同的外观。
+
+
+### Pivot
