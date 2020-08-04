@@ -348,11 +348,54 @@ ObservableCollection通过接口INotifyCollectionChanged实现了更改通知。
 <Page.Resources>
   <DataTemplate x:DataType="models:Book" x:Key="WroxTemplate">
     <Border Background="Red" Margin="4" Padding="4" BorderThickness="2" BorderBrush="DarkRed">
-      <TextBlock Text=>
+      <TextBlock Text="{x:Bind Title,Mode=OneWay}" Foreground="White" Width="300">
     </Border>
   </DataTemplate>
+
+  <DataTemplate x:DataType="models:Book" x:Key="DefaultTemplate">
+      <Border Background="LightBlue" Margin="4 " Padding="4"          BorderThickness="2"
+        BorderBrush="DarkBlue">
+       <TextBlock Text="{x:Bind Title,Mode=OneWay}" Foreground="Yellow" Width="300"/>
+     </Border>
+ </DataTemplate>
 </Page.Resources>
+```
+
+在ItemsControl中使用的数据模板可以使用ItemsControl的ItemTemplate属性来引用。现在使用DataTemplateSelector，根据出版社的名称动态选择DataTemplate，而不是指定DataTemplate。
+
+BookDataTemplateSelector派生自基类DataTemplateSelector。数据模板选择器需要重写方法SelectTemplateCore并返回所选择的DataTemplate。在实现BookTemplateSelector时，指定了两个属性WroxTemplate和DefaultTemplate。
+在SelectTemplateCore方法中，会接收Book对象。可以使用牧师匹配与switch语句，这样，如果出版社时WroxPress，则返回WroxTemplate。在其他情况下，会返回DefaultTemplate。可以使用更多的出版社扩展switch语句。
+```csharp
+    public class BookTemplateSelector:DataTemplateSelector
+    {
+        public DataTemplate WroxTemplate { get; set; }
+
+        public DataTemplate DefaultTemplate { get; set; }
+
+        protected override DataTemplate SelectTemplateCore(object item)
+        {
+            DataTemplate selectedTemplate = null;
+            switch (item)
+            {
+                case Book b when b.Publisher == "Wrox Press":
+                    selectedTemplate = WroxTemplate;
+                    break;
+                default:
+                    selectedTemplate = DefaultTemplate;
+                    break;
+            }
+            return selectedTemplate;
+        }
+
+    }
+
+//-----------------------------------------------------------------
+            <ListView ItemsSource="{x:Bind Books,Mode=OneWay}"
+                  ItemTemplateSelector="{StaticResource BookTemplateSelector}"/>
+//为了将BookTemplateSelector与ListView中的项一起使用。ItemTemplateSelector属性使用键和StaticResource标记扩展来引用模板。
 ```
 
 
 
+### 绑定简单对象
+不只是绑定列表，单本书应该显示在应用程序右边。已编译绑定用于绑定Book对象的BookId、Title和Publisher属性。
