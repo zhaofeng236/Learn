@@ -759,3 +759,85 @@ namespace WinTest
 
 ### Pivot
 >>>>>>> 25199278a888fa6cd8f39714561ff75c470fce88
+使用Pivot控件可以为导航创建类似枢轴的外观。Pivot控件可以包含多个PivotItem控件。每个PivotItem控件都有一个标题和内容。Pivot本身包含左右标题。示例代码填充了右标题。
+```csharp
+// Pivot.xaml
+    <Pivot Title="Pivot Sample" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Pivot.RightHeader>
+            <StackPanel>
+                <TextBlock>右标题</TextBlock>
+            </StackPanel>
+        </Pivot.RightHeader>
+
+        <PivotItem>
+            <PivotItem.Header>pivot 1 的标题</PivotItem.Header>
+            <TextBlock> pivot 1的内容</TextBlock>
+        </PivotItem>
+
+        <PivotItem>
+            <PivotItem.Header>pivot 2 的标题</PivotItem.Header>
+            <TextBlock> pivot 2的内容</TextBlock>
+        </PivotItem>
+
+        <PivotItem>
+            <PivotItem.Header>pivot 3 的标题</PivotItem.Header>
+            <TextBlock> pivot 3的内容</TextBlock>
+        </PivotItem>
+
+        <PivotItem>
+            <PivotItem.Header>pivot 4 的标题</PivotItem.Header>
+            <TextBlock> pivot 4的内容</TextBlock>
+        </PivotItem>
+    </Pivot>
+
+//Pivot.xaml.cs
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Windows.UI.Core;
+using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
+
+namespace WinTest
+{
+    public sealed partial class PivotPage:Page
+    {
+        public PivotPage()
+        {
+            this.InitializeComponent();
+        }
+
+
+        //显示系统后退按钮
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility =
+                AppViewBackButtonVisibility.Visible;
+        }
+    }
+}
+
+//MainPage.xaml
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel>
+            <Button Click="{x:Bind OnGotoHub}">Hub</Button>
+            <Button Click="{x:Bind OnGotoPivot}">Pivot</Button>
+        </StackPanel>
+    </Grid>
+
+//ManPage.xaml.cs
+        public void OnGotoPivot()
+        {
+            Frame.Navigate(typeof(PivotPage));
+        }
+```
+如果所有标题不符合屏幕大小，用户就可以滚动。使用鼠标进行导航，可以看到左右边的箭头。
+
+
+### NavigationView
+Windows 10应用程序通常使用SplitView控件和汉堡包按钮用于打开菜单列表。菜单列表会显示为一个图标，如果没有更多可用的空间，菜单就显示图标和文本。为了给内容和菜单安排空间，SplitView控件开始发挥作用。
+
+SplitView为窗格和内容提供了空间，其中窗格通常包含菜单项。窗格可以有一个小尺寸和一个大尺寸，可以根据可用的屏幕大小对其进行配置。

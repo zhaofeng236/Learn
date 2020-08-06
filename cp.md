@@ -139,3 +139,100 @@ namespace Test
 }
 
 ```
+
+
+```csharp
+using System;
+using System.Diagnostics;
+
+namespace CP
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Hello World!");
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+
+
+            GetRandom();
+
+
+
+            sw.Stop();
+            TimeSpan ts = sw.Elapsed;
+            Console.WriteLine($"\n\n总共花费 {ts.TotalMilliseconds} 毫秒\n");
+            Console.ReadKey();
+        }
+
+
+        private static void GetRandom()
+        {
+            byte[] buffer = Guid.NewGuid().ToByteArray();//生成字节数组
+            int seed = BitConverter.ToInt32(buffer, 0);//利用BitConvert方法吧字节数组转换为整数
+            Console.WriteLine(seed);
+            Random rdmNum = new Random(seed);  //以seed为种子
+
+            int len = 100;
+            int[] arr1 =new int[len];
+            for(int i = 0; i < len; i++)
+            {
+                arr1[i] = rdmNum.Next(0,10);
+            }
+
+            TongJi(arr1,len);
+        }
+
+
+        private static void TongJi(int[] arr1,int len)
+        {
+            int[] t = new int[10];
+            for(int i = 0; i < arr1.Length; i++)
+            {
+                switch (arr1[i])
+                {
+                    case 0:t[0] += 1;
+                        break;
+                    case 1:
+                        t[1] += 1;
+                        break;
+                    case 2:
+                        t[2] += 1;
+                        break;
+                    case 3:
+                        t[3] += 1;
+                        break;
+                    case 4:
+                        t[4] += 1;
+                        break;
+                    case 5:
+                        t[5] += 1;
+                        break;
+                    case 6:
+                        t[6] += 1;
+                        break;
+                    case 7:
+                        t[7] += 1;
+                        break;
+                    case 8:
+                        t[8] += 1;
+                        break;
+                    case 9:
+                        t[9] += 1;
+                        break;
+                }
+            }
+
+            for(int i=0; i<t.Length; i++)
+            {
+                Console.WriteLine($"序号: {i} \t值为: {t[i]} ,\t概率为: {(Double)t[i]/len*100.0}");
+            }
+        }
+
+
+    }
+}
+
+```
