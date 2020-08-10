@@ -841,3 +841,132 @@ namespace WinTest
 Windows 10应用程序通常使用SplitView控件和汉堡包按钮用于打开菜单列表。菜单列表会显示为一个图标，如果没有更多可用的空间，菜单就显示图标和文本。为了给内容和菜单安排空间，SplitView控件开始发挥作用。
 
 SplitView为窗格和内容提供了空间，其中窗格通常包含菜单项。窗格可以有一个小尺寸和一个大尺寸，可以根据可用的屏幕大小对其进行配置。
+可以使用NavigationView控件将所欲这些行为集成到一个控件中。单击汉堡包按钮或缩小应用程序，将窗格更改为紧凑模式，进一步减小应用程序的大小，将NavigationView的左侧部分减少为汉堡包按钮。
+
+
+NavigationView中定义的第一部分是MenuItems列表。，这个列表包含NavigationViewItem对象。每一项都包含Icon、Content和Tag。可以通过编程方式使用Tag来利用这些信息进行导航。对于其中的一些项，使用预定义的图标。用home标记的NavigationViewItem使用Unicode编号为E10F的FontIcon。要分离菜单项，可以使用NavigationViewItemSeparator。在NavigationViewItemHeader中，可以为一组项指定标题内容。
+
+注意在窗格处于紧凑模式时不要剪切该内容。代码片段中，如果窗格没有完全打开，则会隐藏navigationViewItemHeader。
+```csharp
+<Page
+    x:Class="WinTest.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:WinTest"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:local1="using:WinTest"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <NavigationView x:Name="NavigationView1" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <NavigationView.MenuItems>
+            <NavigationViewItem Content="Home" Tag="home">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE10F;"/>
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+            <NavigationViewItemSeparator/>
+            <NavigationViewItemHeader Content="Main Tools" Visibility="{x:Bind NavigationView1.IsPaneOpen,Mode=OneWay}"/>
+            <NavigationViewItem Icon="AllApps" Content="Apps" Tag="apps"/>
+            <NavigationViewItem Icon="Video" Content="Games" Tag="games"/>
+            <NavigationViewItem Icon="audio" Content="music" Tag="music"/>
+        </NavigationView.MenuItems>
+
+        <NavigationView.AutoSuggestBox>
+            <AutoSuggestBox x:Name="autoSuggest" QueryIcon="Find"/>
+        </NavigationView.AutoSuggestBox>
+
+        <NavigationView.HeaderTemplate>
+            <DataTemplate>
+                <Grid Margin="8,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Style="{StaticResource TitleTextBlockStyle}"
+                               FontSize="28"
+                               VerticalAlignment="Center"
+                               Text="Welcome"/>
+                    <CommandBar Grid.Column="1"
+                                DefaultLabelPosition="Right"
+                                Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+                        <AppBarButton Label="Refresh" Icon="Refresh"/>
+                        <AppBarButton Label="Import" Icon="Import"/>
+                    </CommandBar>
+                </Grid>
+            </DataTemplate>
+        </NavigationView.HeaderTemplate>
+
+        <NavigationView.PaneFooter>
+            <HyperlinkButton x:Name="MoreInfoBtn"
+                             Content="More info"
+                             Margin="12,0"/>
+        </NavigationView.PaneFooter>
+
+        <Frame x:Name="ContentFrame" Margin="24">
+            <Frame.ContentTransitions>
+                <TransitionCollection>
+                    <NavigationThemeTransition/>
+                </TransitionCollection>
+            </Frame.ContentTransitions>
+        </Frame>
+        
+    </NavigationView>
+</Page>
+
+```
+
+NavigationView的AutoSuggestBox属性允许向导航添加一个AutoSuggestsBox控件。这显示在菜单项的顶部。AutoSuggestBox参见第36章。
+```csharp
+<NavigationView.AutoSuggestBox>
+    <AutoSuggestBox x:Name-"autoSuggest" QueryIcon="Find"/>
+</NavigationView.AutoSuggestBox>
+```
+
+使用HeaderTemplate，可以定制应用程序的顶部。下面的代码片段定义了一个带有Grid、TextBlock和CommandBar的标题模板。
+
+```csharp
+        <NavigationView.HeaderTemplate>
+            <DataTemplate>
+                <Grid Margin="8,8,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Style="{StaticResource TitleTextBlockStyle}"
+                               FontSize="28"
+                               VerticalAlignment="Center"
+                               Text="Welcome"/>
+                    <CommandBar Grid.Column="1"
+                                DefaultLabelPosition="Right"
+                                Background="{ThemeResource SystemControlBackgroundAltHighBrush}">
+                        <AppBarButton Label="Refresh" Icon="Refresh"/>
+                        <AppBarButton Label="Import" Icon="Import"/>
+                    </CommandBar>
+                </Grid>
+            </DataTemplate>
+        </NavigationView.HeaderTemplate>
+```
+
+PaneFooter定义了窗格的下半部分。在页脚下方，默认显示Settings的菜单项；这个菜单是默认包含的，由许多应用程序使用。
+```csharp
+        <NavigationView.PaneFooter>
+            <HyperlinkButton x:Name="MoreInfoBtn"
+                             Content="More info"
+                             Margin="12,0"/>
+        </NavigationView.PaneFooter>
+```
+
+最后，NavigationPane的内容被Frame控件覆盖。此控件用于导航到页面。NavigationPane围绕页面的内容。
+```csharp
+        <Frame x:Name="ContentFrame" Margin="24">
+            <Frame.ContentTransitions>
+                <TransitionCollection>
+                    <NavigationThemeTransition/>
+                </TransitionCollection>
+            </Frame.ContentTransitions>
+        </Frame>
+```
