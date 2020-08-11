@@ -174,3 +174,135 @@ VariablesSizedWrapGrid是一个包装网格，如果网格可用的大小不够�
 ```
 
 VariableSizedWrapGrid填充了30个随机大小的颜色的Rectangle和TextBlock元素。根据大小，可以在网格内使用1到3行或列。项的大小使用附加属性VariableSizedWrapGrid.ColumnSpan和VariableSizedWrapGrid.RowSpan设置。
+```csharp
+//VariableSizedWrapGrid.xaml
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <VariableSizedWrapGrid x:Name="grid1" MaximumRowsOrColumns="20" ItemHeight="50"
+                      ItemWidth="50"  Orientation="Horizontal" />        
+    </Grid>
+
+//VariableSizedWrapGrid.xaml.cs
+
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            base.OnNavigatedTo(e);
+            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility =
+              Frame.CanGoBack ? AppViewBackButtonVisibility.Visible :
+              AppViewBackButtonVisibility.Collapsed;
+
+            var r = new Random();
+            Grid[] items =
+                Enumerable.Range(0, 30).Select(i =>
+                 {
+                     byte[] colorBytes = new byte[3];
+                     r.NextBytes(colorBytes);
+
+                     var rect = new Rectangle
+                     {
+                         Height = r.Next(40, 150),
+                         Width = r.Next(40, 150),
+                         Fill = new SolidColorBrush(new Color
+                         {
+                             R = colorBytes[0],
+                             G = colorBytes[1],
+                             B = colorBytes[2],
+                             A = 255
+                         })
+                     };
+                     var textBlock = new TextBlock
+                     {
+                         Text = (i + 1).ToString(),
+                         HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Center,
+                         VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Center
+                     };
+
+                     var grid = new Grid();
+                     grid.Children.Add(rect);
+                     grid.Children.Add(textBlock);
+                     return grid;
+                 }).ToArray();
+
+            foreach(var item in items)
+            {
+                grid1.Children.Add(item);
+                Rectangle rect = item.Children.First() as Rectangle;
+
+                if (rect.Width > 50)
+                {
+                    int columnSpan = ((int)rect.Width / 50) + 1;
+                    VariableSizedWrapGrid.SetColumnSpan(item, columnSpan);
+                    int rowSpan = ((int)rect.Height / 50) + 1;
+                    VariableSizedWrapGrid.SetRowSpan(item, rowSpan);
+                }
+            }
+
+        }
+
+
+//MainPage.xaml
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel Orientation="Vertical">
+            <Button Content="VariableSizedWrapGrid" Click="OnVariableSizedWrapGrid"/>
+        </StackPanel>
+    </Grid>
+
+
+//MainPage.xaml.cs
+        private void OnVariableSizedWrapGrid(object sender, RoutedEventArgs e) =>
+            Frame.Navigate(typeof(VariableSizedWrapGridPage));
+
+```
+
+
+#### RelativePanel
+RelativePanel是UWP的一个新面板，允许一额元素相对于另一个元素定位。如果使用的Grid控件定义了行和列，且需要插入一行，就必须修改插入行下面的所有元素。原因是所有行都按数字索引。使用RelativePanel就没有这个问题，它允许根据元素的相对关系放置他们。
+==注意：与RelativePanel相比，Grid控件仍然有他的自动、星型和固定大小的优势==
+
+下面的代码片段在RelativePanel内对其数个TextBlock和TextBox控件、一个按钮和一个矩形。TextBox元素定位在相应TextBlock的右边；按钮相对于面板的底部定位，矩形与第一个TextBlock的顶部对齐，与第一个TextBox的右边对齐。
+```csharp
+//RelativePanelPage.xaml
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <RelativePanel>
+            <TextBlock x:Name="FirstNameLabel" Text="First Name:" Margin="8"/>
+            <TextBox x:Name="FirstNameText" RelativePanel.RightOf="FirstNameLabel"
+                     Margin="8" Width="150"/>
+            
+            <TextBlock x:Name="LastNameLabel" Text="Last Name:" 
+                       RelativePanel.Below="FirstNameLabel" Margin="8"/>
+            <TextBox x:Name="LastNameText" RelativePanel.RightOf="LastNameLabel"
+                     Margin="8" RelativePanel.Below="FirstNameText" Width="150"/>
+            
+            <Button Content="Save" RelativePanel.AlignHorizontalCenterWith="LastNameText" 
+                    RelativePanel.AlignBottomWithPanel="True" Margin="8"/>
+
+            <Rectangle x:Name="Image" Fill="Violet" Width="150" Height="250"
+                       RelativePanel.AlignTopWith="FirstNameLabel"
+                       RelativePanel.RightOf="FirstNameText" Margin="8"/>
+        </RelativePanel>
+    </Grid>
+
+
+
+//RelativePanelPage.xaml.cs
+        protected override void OnNavigatedTo(NavigationEventArgs e)
+        {
+            SystemNavigationManager.GetForCurrentView().AppViewBackButtonVisibility =
+              Frame.CanGoBack ? AppViewBackButtonVisibility.Visible :
+              AppViewBackButtonVisibility.Collapsed;
+
+            base.OnNavigatedTo(e);
+        }
+
+
+//MainPage.xaml
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel Orientation="Vertical">
+            <Button Content="RelativePanel" Click="OnRelativePanelPage"/>
+        </StackPanel>
+    </Grid>
+
+
+//MainPage.xaml.cs
+        private void OnRelativePanelPage(object sender, RoutedEventArgs e) =>
+            Frame.Navigate(typeof(RelativePanelPage));
+```
